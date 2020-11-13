@@ -5,7 +5,7 @@ breed [fruit a-fruit]
 breed [poison a-poison]
 breed [vis a-vis]
 
-mice-own[score last-state reward action]
+mice-own[fruits poisons last-state reward action term reward-type fruit-ratio score]
 
 to setup
   clear-all
@@ -17,7 +17,7 @@ to setup
       set shape "fruit"
     ]
   ]
-  ask n-of num-poison patches [
+  ask n-of num-poison patches with [count fruit-here = 0] [
     sprout-poison 1 [
       set color magenta
       set shape "poison"
@@ -28,20 +28,26 @@ to setup
     set shape "mouse"
     set size 2
     set last-state [0 0 0 0 0 0 0 0 0]
+    set fruits 1
+    set poisons 1
+    set reward-type 1
     set reward 0
     set action 0
     py:set "id" who
-    py:run "agents[id] = q.Agent(0.99,1.0,0.003,9,64,3)"
+    py:run "agents[id] = q.AgentNormalBatch(0.99,0.5,0.002,9,64,3, layers=2, fc1_dim=12, fc2_dim=12)"
   ]
   create-mice 1 [
     set color brown
     set shape "mouse"
     set size 2
     set last-state [0 0 0 0 0 0 0 0 0]
+    set fruits 1
+    set poisons 1
+    set reward-type 2
     set reward 0
     set action 0
     py:set "id" who
-    py:run "agents[id] = q.Agent(0.9,0.5,0.005,9,64,3,fc1_dim=32,fc2_dim=32)"
+    py:run "agents[id] = q.AgentNormalBatch(0.99,0.5,0.002,9,64,3, layers=2, fc1_dim=12, fc2_dim=12)"
 
   ]
   create-mice 1 [
@@ -49,21 +55,27 @@ to setup
     set shape "mouse"
     set size 2
     set last-state [0 0 0 0 0 0 0 0 0]
+    set fruits 1
+    set poisons 1
+    set reward-type 3
     set reward 0
     set action 0
     py:set "id" who
-    py:run "agents[id] = q.Agent(0.9,0.5,0.005,9,64,3,fc1_dim=128,fc2_dim=128)"
+    py:run "agents[id] = q.AgentNormalBatch(0.99,0.5,0.002,9,64,3, layers=2, fc1_dim=12, fc2_dim=12)"
+
   ]
-  create-mice 1 [
-    set color black
-    set shape "mouse"
-    set size 2
-    set last-state [0 0 0 0 0 0 0 0 0]
-    set reward 0
-    set action 0
-    py:set "id" who
-    py:run "agents[id] = q.Agent(0.99,0.7,0.01,9,64,3,fc1_dim=16,fc2_dim=16)"
-  ]
+;  create-mice 1 [
+;    set color black
+;    set shape "mouse"
+;    set fruits 1
+;    set poisons 1
+;    set size 2
+;    set last-state [0 0 0 0 0 0 0 0 0]
+;    set reward 0
+;    set action 0
+;    py:set "id" who
+;    py:run "agents[id] = q.Agent(0.99,0.7,0.01,9,64,3,fc1_dim=16,fc2_dim=16)"
+;  ]
   reset-ticks
 end
 
@@ -72,8 +84,17 @@ to go
   ask vis [die]
   ask mice [
     mice-act
+    if ticks mod 1000 = 0 [calculate-ratio]
   ]
   tick
+end
+
+to calculate-ratio
+  if fruits = 0 [set fruits 1]
+  if poisons = 0 [set poisons 1]
+  set fruit-ratio (fruits / (fruits + poisons))
+  set fruits 0
+  set poisons 0
 end
 
 to mice-act
@@ -82,38 +103,22 @@ to mice-act
   py:set "state" last-state
   py:set "new_state" state
   py:set "reward" reward
-  py:set "terminal" 1
+  py:set "terminal" term
   py:set "action" action
   py:run "agents[id].store_transition(state, action, reward, new_state, terminal)"
   py:run "agents[id].learn()"
   set last-state state
-  set reward 0
   py:set "obs" observations
   set action py:runresult "agents[id].choose_action(obs)"
   (ifelse
     action = 0
-    [lt 10]
+    [lt 20]
     action = 1
-    [rt 10]
+    [rt 20]
     action = 2
-    [fd 0.1]
+    [fd 0.4]
   )
-  let near-poison poison in-radius 0.5
-  if any? near-poison [
-    ask one-of near-poison [
-      die
-    ]
-    set score score - 5
-    set reward -1
-  ]
-  let near-fruit fruit in-radius 0.5
-  if any? near-fruit [
-    ask one-of near-fruit [
-      die
-    ]
-    set score score + 5
-    set reward 1
-  ]
+  do-rewards
   ;show word "S:" state
   ;show word "S':" observations
   ;ask other turtles in-cone 7 60 [hatch-vis 1 [set color blue set shape "dot"]]
@@ -121,7 +126,7 @@ end
 
 to resupply
   if count poison < num-poison [
-    ask n-of (num-poison - count poison) patches with [count poison-here = 0] [
+    ask n-of (num-poison - count poison) patches with [count poison-here = 0 and count fruit-here = 0] [
       sprout-poison 1 [
         set color magenta
         set shape "poison"
@@ -129,7 +134,7 @@ to resupply
     ]
   ]
   if count fruit < num-fruit [
-    ask n-of (num-fruit - count fruit) patches with [count fruit-here = 0] [
+    ask n-of (num-fruit - count fruit) patches with [count fruit-here = 0 and count poison-here = 0] [
       sprout-fruit 1 [
         set color red
         set shape "fruit"
@@ -208,6 +213,74 @@ to setup-python-environment
   py:run "import qlearnnlogo as q"
   py:run "agents = dict()"
 end
+
+
+to do-rewards
+  set term 1
+  (if-else
+    reward-type = 1
+    [
+      set reward 0
+    ]
+    reward-type = 2
+    [
+      set reward 1
+    ]
+    reward-type = 3
+    [
+      if any? (poison in-cone 7 60) [
+        let nearest-poison min-one-of (poison in-cone 7 60) [distance myself]
+        let p-d distance nearest-poison
+        set reward max (list (-5) (- (1 / p-d)))
+      ]
+      if any? (fruit in-cone 7 60) [
+        let nearest-fruit min-one-of (fruit in-cone 7 60) [distance myself]
+        let f-d distance nearest-fruit
+        set reward min (list (5)  (1 / f-d))
+      ]
+    ]
+  )
+  let near-poison poison in-radius 0.5
+  if any? near-poison [
+    ask one-of near-poison [
+      die
+    ]
+    set poisons poisons + 1
+    set score score - 1
+    (if-else
+      reward-type = 1 or reward-type = 3
+      [
+        set reward -5
+      ]
+      reward-type = 2
+      [
+        set reward -1
+        set term 0
+      ]
+    )
+  ]
+  let near-fruit fruit in-radius 0.5
+  if any? near-fruit [
+    ask one-of near-fruit [
+      die
+    ]
+    set fruits fruits + 1
+    set score score + 1
+    (if-else
+      reward-type = 1 or reward-type = 3
+      [
+        set reward 5
+      ]
+      reward-type = 2
+      [
+        set reward 50
+      ]
+    )
+  ]
+
+end
+
+
 @#$#@#$#@
 GRAPHICS-WINDOW
 210
@@ -261,8 +334,8 @@ SLIDER
 num-fruit
 num-fruit
 0
-30
-30.0
+100
+100.0
 1
 1
 NIL
@@ -276,8 +349,8 @@ SLIDER
 num-poison
 num-poison
 0
-50
-30.0
+100
+100.0
 1
 1
 NIL
@@ -306,7 +379,7 @@ BUTTON
 93
 159
 Epsilon
-show py:runresult \"agent.epsilon\"
+show py:runresult \"agents[200].epsilon\"
 NIL
 1
 T
@@ -320,9 +393,30 @@ NIL
 PLOT
 882
 10
-1414
+1243
 345
-Mice Scores
+Fruit Ratio
+1K Ticks
+Fruit / (Fruit + Posion)
+0.0
+10.0
+0.0
+1.0
+true
+false
+"" ""
+PENS
+"Black Mouse" 1.0 0 -16777216 true "" "if ticks mod 1000 = 0 and (is-mouse? turtle (num-fruit + num-poison + 3)) [plot [fruit-ratio] of mouse (num-fruit + num-poison + 3)]"
+"Grey Mouse" 1.0 0 -7500403 true "" "if ticks mod 1000 = 0 and (is-mouse? turtle (num-fruit + num-poison + 2)) [plot [fruit-ratio] of mouse (num-fruit + num-poison + 2)]"
+"Brown Mouse" 1.0 0 -6459832 true "" "if ticks mod 1000 = 0 and (is-mouse? turtle (num-fruit + num-poison + 1)) [plot [fruit-ratio] of mouse (num-fruit + num-poison + 1)]"
+"White Mouse" 1.0 0 -2064490 true "" "if ticks mod 1000 = 0 and (is-mouse? turtle (num-fruit + num-poison)) [plot [fruit-ratio] of mouse (num-fruit + num-poison)]"
+
+PLOT
+882
+348
+1243
+683
+Scores
 1K Ticks
 Score
 0.0
@@ -333,10 +427,10 @@ true
 false
 "" ""
 PENS
-"Black Mouse" 1.0 0 -16777216 true "" "if ticks mod 1000 = 0 [plot [score] of mouse (num-fruit + num-poison + 3)]"
-"Grey Mouse" 1.0 0 -7500403 true "" "if ticks mod 1000 = 0 [plot [score] of mouse (num-fruit + num-poison + 2)]"
-"Brown Mouse" 1.0 0 -6459832 true "" "if ticks mod 1000 = 0 [plot [score] of mouse (num-fruit + num-poison + 1)]"
-"White Mouse" 1.0 0 -2064490 true "" "if ticks mod 1000 = 0 [plot [score] of mouse (num-fruit + num-poison)]"
+"Black Mouse" 1.0 0 -16777216 true "" "if ticks mod 1000 = 0 and (is-mouse? turtle (num-fruit + num-poison + 3)) [plot [score] of mouse (num-fruit + num-poison + 3)]"
+"Grey Mouse" 1.0 0 -7500403 true "" "if ticks mod 1000 = 0 and (is-mouse? turtle (num-fruit + num-poison + 2)) [plot [score] of mouse (num-fruit + num-poison + 2)]"
+"Brown Mouse" 1.0 0 -6459832 true "" "if ticks mod 1000 = 0 and (is-mouse? turtle (num-fruit + num-poison + 1)) [plot [score] of mouse (num-fruit + num-poison + 1)]"
+"White Mouse" 1.0 0 -2064490 true "" "if ticks mod 1000 = 0 and (is-mouse? turtle (num-fruit + num-poison)) [plot [score] of mouse (num-fruit + num-poison)]"
 
 @#$#@#$#@
 ## WHAT IS IT?
