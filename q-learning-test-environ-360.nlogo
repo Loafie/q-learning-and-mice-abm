@@ -27,55 +27,58 @@ to setup
     set color white
     set shape "mouse"
     set size 2
-    set last-state [0 0 0 0 0 0 0 0 0 0 0 0]
+    set last-state []
+    repeat 54 [set last-state lput 0.0 last-state ]
+    set fruits 1
+    set poisons 1
+    set reward-type 1
+    set reward 0
+    set action 0
+    py:set "id" who
+    py:run "agents[id] = q.AgentNormalBatch(0.995,0.5,0.002,54,64,3, layers=3, fc1_dim=256, fc2_dim=256, eps_dec = 0.99996)"
+  ]
+  create-mice 1 [
+    set color brown
+    set shape "mouse"
+    set size 2
+    set last-state []
+    repeat 54 [set last-state lput 0.0 last-state ]
+    set fruits 1
+    set poisons 1
+    set reward-type 2
+    set reward 0
+    set action 0
+    py:set "id" who
+    py:run "agents[id] = q.AgentNormalBatch(0.995,0.5,0.002,54,64,3, layers=3, fc1_dim=256, fc2_dim=256, eps_dec = 0.99996)"
+  ]
+  create-mice 1 [
+    set color grey
+    set shape "mouse"
+    set size 2
+    set last-state []
+    repeat 54 [set last-state lput 0.0 last-state ]
     set fruits 1
     set poisons 1
     set reward-type 3
     set reward 0
     set action 0
     py:set "id" who
-    py:run "agents[id] = q.AgentNormalBatch(0.999,0.5,0.002,12,500,3, layers=3, fc1_dim=256, fc2_dim=256, eps_dec = 0.99996)"
+    py:run "agents[id] = q.AgentNormalBatch(0.995,0.5,0.002,54,64,3, layers=3, fc1_dim=256, fc2_dim=256, eps_dec = 0.99996)"
   ]
-;  create-mice 1 [
-;    set color brown
-;    set shape "mouse"
-;    set size 2
-;    set last-state [0 0 0 0 0 0 0 0 0 0 0 0]
-;    set fruits 1
-;    set poisons 1
-;    set reward-type 1
-;    set reward 0
-;    set action 0
-;    py:set "id" who
-;    py:run "agents[id] = q.AgentBatchRewardProportional(0.99,0.5,0.002,12,64,3, layers=3, fc1_dim=32, fc2_dim=32, eps_dec = 0.99996)"
-;
-;  ]
-;  create-mice 1 [
-;    set color grey
-;    set shape "mouse"
-;    set size 2
-;    set last-state [0 0 0 0 0 0 0 0 0]
-;    set fruits 1
-;    set poisons 1
-;    set reward-type 3
-;    set reward 0
-;    set action 0
-;    py:set "id" who
-;    py:run "agents[id] = q.AgentNormalBatch(0.99,0.5,0.002,9,64,3, layers=2, fc1_dim=12, fc2_dim=12)"
-;
-;  ]
-;  create-mice 1 [
-;    set color black
-;    set shape "mouse"
-;    set fruits 1
-;    set poisons 1
-;    set size 2
-;    set last-state [0 0 0 0 0 0 0 0 0]
-;    set reward 0
-;    set action 0
-;    py:set "id" who
-;    py:run "agents[id] = q.Agent(0.99,0.7,0.01,9,64,3,fc1_dim=16,fc2_dim=16)"
-;  ]
+  create-mice 1 [
+    set color black
+    set shape "mouse"
+    set size 2
+    set last-state []
+    repeat 54 [set last-state lput 0.0 last-state ]
+    set fruits 1
+    set poisons 1
+    set reward-type 4
+    set reward 0
+    set action 0
+    py:set "id" who
+    py:run "agents[id] = q.AgentNormalBatch(0.995,0.5,0.002,54,64,3, layers=3, fc1_dim=256, fc2_dim=256, eps_dec = 0.99996)"
+  ]
   reset-ticks
 end
 
@@ -145,73 +148,44 @@ end
 
 to-report observations
   let obs []
-  let near other turtles in-cone 7 60
-  rt 20
-  let m min-one-of near with [is-mouse? self] in-cone 7 20 [distance myself]
-  if-else m = nobody [
-    set obs lput 0 obs
-  ][
-    set obs lput (7 - ((distance m) / 2)) obs
+  let near other turtles in-radius 7
+  repeat 18 [
+    set obs sentence obs get-in-cone 7 20
+    rt 20
   ]
-  let p min-one-of near with [is-a-poison? self] in-cone 7 20 [distance myself]
-  if-else p = nobody [
-    set obs lput 0 obs
-  ][
-    set obs lput (7 - ((distance p) / 2)) obs
-  ]
-  let f min-one-of near with [is-a-fruit? self] in-cone 7 20 [distance myself]
-  if-else f = nobody [
-    set obs lput 0 obs
-  ][
-    set obs lput (7 - ((distance f) / 2)) obs
-  ]
-  lt 20
-  set m min-one-of near with [is-mouse? self] in-cone 7 20 [distance myself]
-  if-else m = nobody [
-    set obs lput 0 obs
-  ][
-    set obs lput (7 - ((distance m) / 2)) obs
-  ]
-  set p min-one-of near with [is-a-poison? self] in-cone 7 20 [distance myself]
-  if-else p = nobody [
-    set obs lput 0 obs
-  ][
-    set obs lput (7 - ((distance p) / 2)) obs
-  ]
-  set f min-one-of near with [is-a-fruit? self] in-cone 7 20 [distance myself]
-  if-else f = nobody [
-    set obs lput 0 obs
-  ][
-    set obs lput (7 - ((distance f) / 2)) obs
-  ]
-  lt 20
-  set m min-one-of near with [is-mouse? self] in-cone 7 20 [distance myself]
-  if-else m = nobody [
-    set obs lput 0 obs
-  ][
-    set obs lput (7 - ((distance m) / 2)) obs
-  ]
-  set p min-one-of near with [is-a-poison? self] in-cone 7 20 [distance myself]
-  if-else p = nobody [
-    set obs lput 0 obs
-  ][
-    set obs lput (7 - ((distance p) / 2)) obs
-  ]
-  set f min-one-of near with [is-a-fruit? self] in-cone 7 20 [distance myself]
-  if-else f = nobody [
-    set obs lput 0 obs
-  ][
-    set obs lput (7 - ((distance f) / 2)) obs
-  ]
-  rt 20
   set obs map [i -> i / 7] obs
-  (ifelse
-    action = 0
-    [set obs sentence obs [1.0 0 0] ]
-    action = 1
-    [set obs sentence obs [0 1.0 0] ]
-    action = 2
-    [set obs sentence obs [0 0 1.0] ])
+  if encode-actions? [
+    (ifelse
+      action = 0
+      [set obs sentence obs [1.0 0 0] ]
+      action = 1
+      [set obs sentence obs [0 1.0 0] ]
+      action = 2
+      [set obs sentence obs [0 0 1.0] ])]
+  report obs
+end
+
+to-report get-in-cone [dist angle]
+  let obs []
+  let cone other turtles in-cone dist angle
+  let m min-one-of cone with [is-mouse? self] [distance myself]
+  if-else m = nobody [
+    set obs lput 0 obs
+  ][
+    set obs lput (7 - ((distance m) / 2)) obs
+  ]
+  let p min-one-of cone with [is-a-poison? self] [distance myself]
+  if-else p = nobody [
+    set obs lput 0 obs
+  ][
+    set obs lput (7 - ((distance p) / 2)) obs
+  ]
+  let f min-one-of cone with [is-a-fruit? self] [distance myself]
+  if-else f = nobody [
+    set obs lput 0 obs
+  ][
+    set obs lput (7 - ((distance f) / 2)) obs
+  ]
   report obs
 end
 
@@ -449,6 +423,17 @@ PENS
 "Grey Mouse" 1.0 0 -7500403 true "" "if ticks mod 1000 = 0 and (is-mouse? turtle (num-fruit + num-poison + 2)) [plot [score] of mouse (num-fruit + num-poison + 2)]"
 "Brown Mouse" 1.0 0 -6459832 true "" "if ticks mod 1000 = 0 and (is-mouse? turtle (num-fruit + num-poison + 1)) [plot [score] of mouse (num-fruit + num-poison + 1)]"
 "White Mouse" 1.0 0 -2064490 true "" "if ticks mod 1000 = 0 and (is-mouse? turtle (num-fruit + num-poison)) [plot [score] of mouse (num-fruit + num-poison)]"
+
+SWITCH
+24
+163
+170
+196
+encode-actions?
+encode-actions?
+1
+1
+-1000
 
 @#$#@#$#@
 ## WHAT IS IT?
