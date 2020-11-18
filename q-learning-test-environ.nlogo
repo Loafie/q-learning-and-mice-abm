@@ -5,7 +5,7 @@ breed [fruit a-fruit]
 breed [poison a-poison]
 breed [vis a-vis]
 
-mice-own[fruits poisons last-state reward action term reward-type fruit-ratio score]
+mice-own[fruits poisons last-state reward action term reward-type fruit-ratio score ratios]
 
 to setup
   clear-all
@@ -27,14 +27,15 @@ to setup
     set color white
     set shape "mouse"
     set size 2
-    set last-state [0 0 0 0 0 0 0 0 0 0 0 0]
+    set last-state [0 0 0 0 0 0 0 0 0]
     set fruits 1
     set poisons 1
     set reward-type 3
     set reward 0
     set action 0
+    set ratios []
     py:set "id" who
-    py:run "agents[id] = q.AgentNormalBatch(0.999,0.5,0.002,12,500,3, layers=3, fc1_dim=256, fc2_dim=256, eps_dec = 0.99996)"
+    py:run "agents[id] = q.AgentNBND(0.9995,0.5,0.002,9,500,3, layers=3, fc1_dim=256, fc2_dim=256, eps_dec = 0.99996)"
   ]
 ;  create-mice 1 [
 ;    set color brown
@@ -92,7 +93,8 @@ end
 to calculate-ratio
   if fruits = 0 [set fruits 1]
   if poisons = 0 [set poisons 1]
-  set fruit-ratio (fruits / (fruits + poisons))
+  set ratios lput (fruits / (fruits + poisons)) ratios
+  if length ratios > 10 [set ratios but-first ratios]
   set fruits 0
   set poisons 0
 end
@@ -204,14 +206,14 @@ to-report observations
     set obs lput (7 - ((distance f) / 2)) obs
   ]
   rt 20
-  set obs map [i -> i / 7] obs
-  (ifelse
-    action = 0
-    [set obs sentence obs [1.0 0 0] ]
-    action = 1
-    [set obs sentence obs [0 1.0 0] ]
-    action = 2
-    [set obs sentence obs [0 0 1.0] ])
+;  set obs map [i -> i / 7] obs
+;  (ifelse
+;    action = 0
+;    [set obs sentence obs [1.0 0 0] ]
+;    action = 1
+;    [set obs sentence obs [0 1.0 0] ]
+;    action = 2
+;    [set obs sentence obs [0 0 1.0] ])
   report obs
 end
 
@@ -424,10 +426,10 @@ true
 false
 "" ""
 PENS
-"Black Mouse" 1.0 0 -16777216 true "" "if ticks mod 1000 = 0 and (is-mouse? turtle (num-fruit + num-poison + 3)) [plot [fruit-ratio] of mouse (num-fruit + num-poison + 3)]"
-"Grey Mouse" 1.0 0 -7500403 true "" "if ticks mod 1000 = 0 and (is-mouse? turtle (num-fruit + num-poison + 2)) [plot [fruit-ratio] of mouse (num-fruit + num-poison + 2)]"
-"Brown Mouse" 1.0 0 -6459832 true "" "if ticks mod 1000 = 0 and (is-mouse? turtle (num-fruit + num-poison + 1)) [plot [fruit-ratio] of mouse (num-fruit + num-poison + 1)]"
-"White Mouse" 1.0 0 -2064490 true "" "if ticks mod 1000 = 0 and (is-mouse? turtle (num-fruit + num-poison)) [plot [fruit-ratio] of mouse (num-fruit + num-poison)]"
+"Black Mouse" 1.0 0 -16777216 true "" "if ticks mod 1000 = 0 and (is-mouse? turtle (num-fruit + num-poison + 3)) [plot [mean ratios] of mouse (num-fruit + num-poison + 3)]"
+"Grey Mouse" 1.0 0 -7500403 true "" "if ticks mod 1000 = 0 and (is-mouse? turtle (num-fruit + num-poison + 2)) [plot [mean ratios] of mouse (num-fruit + num-poison + 2)]"
+"Brown Mouse" 1.0 0 -6459832 true "" "if ticks mod 1000 = 0 and (is-mouse? turtle (num-fruit + num-poison + 1)) [plot [mean ratios] of mouse (num-fruit + num-poison + 1)]"
+"White Mouse" 1.0 0 -2064490 true "" "if ticks mod 1000 = 0 and (is-mouse? turtle (num-fruit + num-poison)) [plot [mean ratios] of mouse (num-fruit + num-poison)]"
 
 PLOT
 882
