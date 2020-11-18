@@ -33,7 +33,7 @@ to setup
     set reward-type 3
     set reward 0
     set action 0
-    set ratios []
+    set ratios [0.5]
     py:set "id" who
     py:run "agents[id] = q.AgentNBND(0.9995,0.5,0.002,9,500,3, layers=3, fc1_dim=256, fc2_dim=256, eps_dec = 0.99996)"
   ]
