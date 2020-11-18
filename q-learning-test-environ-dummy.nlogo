@@ -5,11 +5,11 @@ breed [fruit a-fruit]
 breed [poison a-poison]
 breed [vis a-vis]
 
-mice-own[fruits poisons last-state reward action term reward-type fruit-ratio score ratios]
+mice-own[fruits poisons last-state reward action term reward-type fruit-ratio score ratios dummy?]
 
 to setup
   clear-all
-  setup-python-environment
+  ;setup-python-environment
   ask patches [set pcolor 51]
   ask n-of num-fruit patches [
     sprout-fruit 1 [
@@ -32,52 +32,53 @@ to setup
     set poisons 1
     set reward-type 3
     set reward 0
+    set dummy? true
     set action 0
     set ratios [0.5]
-    py:set "id" who
-    py:run "agents[id] = q.AgentNBND(0.9995,0.5,0.002,9,64,3, layers=3, fc1_dim=32, fc2_dim=32, eps_dec = 0.9996)"
-  ]
-  create-mice 1 [
-    set color brown
-    set shape "mouse"
-    set size 2
-    set last-state [0 0 0 0 0 0 0 0 0]
-    set fruits 1
-    set poisons 1
-    set reward-type 3
-    set reward 0
-    set action 0
-    set ratios [0.5]
-    py:set "id" who
-    py:run "agents[id] = q.AgentNormalBatch(0.9995,0.5,0.002,9,64,3, layers=3, fc1_dim=32, fc2_dim=32, eps_dec = 0.9996)"
-  ]
-;  create-mice 1 [
-;    set color grey
-;    set shape "mouse"
-;    set size 2
-;    set last-state [0 0 0 0 0 0 0 0 0]
-;    set fruits 1
-;    set poisons 1
-;    set reward-type 3
-;    set reward 0
-;    set action 0
-;    py:set "id" who
-;    py:run "agents[id] = q.AgentNormalBatch(0.99,0.5,0.002,9,64,3, layers=2, fc1_dim=12, fc2_dim=12)"
-;
-;  ]
-;  create-mice 1 [
-;    set color black
-;    set shape "mouse"
-;    set fruits 1
-;    set poisons 1
-;    set size 2
-;    set last-state [0 0 0 0 0 0 0 0 0]
-;    set reward 0
-;    set action 0
-;    py:set "id" who
-;    py:run "agents[id] = q.Agent(0.99,0.7,0.01,9,64,3,fc1_dim=16,fc2_dim=16)"
-;  ]
-  reset-ticks
+    ;py:set "id" who
+    ;py:run "agents[id] = q.AgentNBND(0.9995,0.5,0.002,9,64,3, layers=3, fc1_dim=32, fc2_dim=32, eps_dec = 0.9996)"
+     ]
+    ;  create-mice 1 [
+    ;    set color brown
+    ;    set shape "mouse"
+    ;    set size 2
+    ;    set last-state [0 0 0 0 0 0 0 0 0]
+    ;    set fruits 1
+    ;    set poisons 1
+    ;    set reward-type 3
+    ;    set reward 0
+    ;    set action 0
+    ;    set ratios [0.5]
+    ;    py:set "id" who
+    ;    py:run "agents[id] = q.AgentNormalBatch(0.9995,0.5,0.002,9,64,3, layers=3, fc1_dim=32, fc2_dim=32, eps_dec = 0.9996)"
+    ;  ]
+    ;  create-mice 1 [
+    ;    set color grey
+    ;    set shape "mouse"
+    ;    set size 2
+    ;    set last-state [0 0 0 0 0 0 0 0 0]
+    ;    set fruits 1
+    ;    set poisons 1
+    ;    set reward-type 3
+    ;    set reward 0
+    ;    set action 0
+    ;    py:set "id" who
+    ;    py:run "agents[id] = q.AgentNormalBatch(0.99,0.5,0.002,9,64,3, layers=2, fc1_dim=12, fc2_dim=12)"
+    ;
+    ;  ]
+    ;  create-mice 1 [
+    ;    set color black
+    ;    set shape "mouse"
+    ;    set fruits 1
+    ;    set poisons 1
+    ;    set size 2
+    ;    set last-state [0 0 0 0 0 0 0 0 0]
+    ;    set reward 0
+    ;    set action 0
+    ;    py:set "id" who
+    ;    py:run "agents[id] = q.Agent(0.99,0.7,0.01,9,64,3,fc1_dim=16,fc2_dim=16)"
+    ;  ]
+    reset-ticks
 end
 
 to go
@@ -100,18 +101,23 @@ to calculate-ratio
 end
 
 to mice-act
-  let state observations
-  py:set "id" who
-  py:set "state" last-state
-  py:set "new_state" state
-  py:set "reward" reward
-  py:set "terminal" term
-  py:set "action" action
-  py:run "agents[id].store_transition(state, action, reward, new_state, terminal)"
-  py:run "agents[id].learn()"
-  set last-state state
-  py:set "obs" state
-  set action py:runresult "agents[id].choose_action(obs)"
+  if-else not dummy? [
+    let state observations
+    py:set "id" who
+    py:set "state" last-state
+    py:set "new_state" state
+    py:set "reward" reward
+    py:set "terminal" term
+    py:set "action" action
+    py:run "agents[id].store_transition(state, action, reward, new_state, terminal)"
+    py:run "agents[id].learn()"
+    set last-state state
+    py:set "obs" state
+    set action py:runresult "agents[id].choose_action(obs)"
+  ]
+  [
+    set action designed-decision observations
+  ]
   (ifelse
     action = 0
     [lt 20]
@@ -206,14 +212,14 @@ to-report observations
     set obs lput (7 - ((distance f) / 2)) obs
   ]
   rt 20
-;  set obs map [i -> i / 7] obs
-;  (ifelse
-;    action = 0
-;    [set obs sentence obs [1.0 0 0] ]
-;    action = 1
-;    [set obs sentence obs [0 1.0 0] ]
-;    action = 2
-;    [set obs sentence obs [0 0 1.0] ])
+  set obs map [i -> i / 7] obs
+  ;  (ifelse
+  ;    action = 0
+  ;    [set obs sentence obs [1.0 0 0] ]
+  ;    action = 1
+  ;    [set obs sentence obs [0 1.0 0] ]
+  ;    action = 2
+  ;    [set obs sentence obs [0 0 1.0] ])
   report obs
 end
 
@@ -299,8 +305,35 @@ to do-rewards
       ]
     )
   ]
-
 end
+
+
+to-report designed-decision [ obs ]
+  let the-action 2
+  let max-act -2
+  let actions-list (list ifelse-value (item 2 obs - item 1 obs) > 0
+  [ item 2 obs ]
+  [0 - (item 1 obs)])
+  set actions-list lput ifelse-value (item 5 obs - item 4 obs) > 0
+  [ item 5 obs ]
+  [0 - (item 4 obs)] actions-list
+  set actions-list lput ifelse-value (item 8 obs - item 7 obs) > 0
+  [ item 8 obs ]
+  [0 - (item 7 obs)] actions-list
+  if item 0 actions-list >= max-act [
+    set max-act item 0 actions-list
+    set the-action 1
+  ]
+  if item 2 actions-list >= max-act [
+    set max-act item 2 actions-list
+    set the-action 0
+  ]
+  if item 1 actions-list >= max-act [
+    set the-action 2
+  ]
+  report the-action
+end
+
 @#$#@#$#@
 GRAPHICS-WINDOW
 210
