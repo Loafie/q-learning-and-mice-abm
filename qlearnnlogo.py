@@ -144,7 +144,6 @@ class AgentOneShot(object):
             q_next = self.Q_eval.forward(the_new_state)
             q_next = T.tensor(np.array(0.0, dtype=np.float32)).to(self.Q_eval.device) if the_terminal.item() else q_next
             q_target = the_reward + self.gamma * T.max(q_next, dim=0)[0]
-
             loss = self.Q_eval.loss(q_target, q_eval).to(self.Q_eval.device)
             loss.backward()
             self.Q_eval.optimizer.step()
@@ -394,21 +393,17 @@ class AgentNBND(object):
         self.mem_cntr += 1
 
     def choose_action(self, observation):
-        rand = np.random.random()
-        if rand < self.epsilon:
-            action = np.random.choice(self.action_space)
-        else:
-            state = T.tensor([np.array(observation, dtype=np.float32)]).to(self.Q_eval.device)
-            with T.no_grad():
-                actions = F.normalize(self.Q_eval.forward(state), p = 1, eps=0.000000001, dim=1)
-                rand = np.random.random()
-                action = 0
-                ind = 0
-                while ind < self.n_actions and rand > 0:
-                    if rand < actions[0][ind]:
-                        action = ind
-                    rand = rand - actions[0][ind]
-                    ind = ind + 1
+        state = T.tensor([np.array(observation, dtype=np.float32)]).to(self.Q_eval.device)
+        with T.no_grad():
+            actions = F.softmax(self.Q_eval.forward(state), dim=1)
+            rand = np.random.random()
+            action = 0
+            ind = 0
+            while ind < self.n_actions and rand > 0:
+                if rand < actions[0][ind]:
+                    action = ind
+                rand = rand - actions[0][ind]
+                ind = ind + 1
         return action
 
     def learn(self):
@@ -425,7 +420,7 @@ class AgentNBND(object):
             q_eval = self.Q_eval.forward(state_batch)[batch_index, action_batch]
             q_next = self.Q_eval.forward(new_state_batch)
             q_next[terminal_batch] = 0.0
-            q_target = reward_batch + self.gamma * T.max(q_next, dim=1)[0]
+            q_target = reward_batch + self.gamma * T.sum(q_next * F.softmax(q_next, dim=1), dim=1)
             loss = self.Q_eval.loss(q_target, q_eval).to(self.Q_eval.device)
             loss.backward()
             self.Q_eval.optimizer.step()
