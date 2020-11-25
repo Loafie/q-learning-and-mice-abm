@@ -1,102 +1,91 @@
-extensions [ py profiler ]
+extensions [ py ]
 
 breed [mice mouse]
-breed [fruit a-fruit]
-breed [poison a-poison]
-breed [vis a-vis]
+breed [hawks hawk]
 
-mice-own[fruits poisons last-state reward action term reward-type fruit-ratio score ratios]
+turtles-own [reward last-state action score params]
+mice-own [ dead? ]
 
 to setup
   clear-all
   setup-python-environment
-  ask patches [set pcolor 51]
-  ask n-of num-fruit patches [
-    sprout-fruit 1 [
-      set color red
-      set shape "fruit"
-    ]
-  ]
-  ask n-of num-poison patches with [count fruit-here = 0] [
-    sprout-poison 1 [
-      set color magenta
-      set shape "poison"
-    ]
-  ]
-  create-mice 1 [
-    set color white
-    set shape "mouse"
+  ask patches [set pcolor 52]
+  ;ask patches with [abs pxcor = 12 and abs pycor >= 8 and abs pycor <= 12] [set pcolor white]
+  ;ask patches with [abs pycor = 12 and abs pxcor >= 8 and abs pxcor <= 12] [set pcolor white]
+  ;ask patches with [pxcor = 0 and abs pycor <= 8 and abs pycor >= 4][set pcolor white]
+  ;ask patches with [pycor = 0 and abs pxcor <= 8 and abs pxcor >= 4][set pcolor white]
+  create-hawks 10 [
     set size 2
-    set last-state [0 0 0 0 0 0 0 0 0]
-    set fruits 1
-    set poisons 1
-    set reward-type 3
+    set color one-of [blue red yellow cyan]
+    let targ one-of patches with [pcolor = 52 and not any? hawks-here]
+    set xcor [pxcor] of targ
+    set ycor [pycor] of targ
+    set params new-params
     set reward 0
     set action 0
-    set ratios [0.5]
+    set last-state n-values 36 [0]
+    set shape "hawk"
+    py:set "params" format-params params
     py:set "id" who
-    py:run "agents[id] = q.AgentNBND(0.9995,0.5,0.002,9,64,3, layers=3, fc1_dim=32, fc2_dim=32, eps_dec = 0.9996)"
+    py:run "agents[id] = q.AgentNormalBatch(params[0],0.5,params[1],36,params[2],3, layers=params[3], fc1_dim=params[4], fc2_dim=params[5], eps_dec = params[6])"
   ]
-  create-mice 1 [
-    set color brown
-    set shape "mouse"
-    set size 2
-    set last-state [0 0 0 0 0 0 0 0 0]
-    set fruits 1
-    set poisons 1
-    set reward-type 3
+  create-mice 10 [
+    set size 1.5
+    set color one-of [white grey brown black]
+    let targ one-of patches with [pcolor = 52 and not any? hawks-here and not any? mice-here]
+    set xcor [pxcor] of targ
+    set ycor [pycor] of targ
+    set params new-params
     set reward 0
     set action 0
-    set ratios [0.5]
+    set last-state n-values 36 [0]
+    set shape "mouse"
+    set dead? false
+    py:set "params" format-params params
     py:set "id" who
-    py:run "agents[id] = q.AgentNormalBatch(0.9995,0.5,0.002,9,64,3, layers=3, fc1_dim=32, fc2_dim=32, eps_dec = 0.9996)"
+    py:run "agents[id] = q.AgentNormalBatch(params[0],0.5,params[1],36,params[2],3, layers=params[3], fc1_dim=params[4], fc2_dim=params[5], eps_dec = params[6])"
   ]
-;  create-mice 1 [
-;    set color grey
-;    set shape "mouse"
-;    set size 2
-;    set last-state [0 0 0 0 0 0 0 0 0]
-;    set fruits 1
-;    set poisons 1
-;    set reward-type 3
-;    set reward 0
-;    set action 0
-;    py:set "id" who
-;    py:run "agents[id] = q.AgentNormalBatch(0.99,0.5,0.002,9,64,3, layers=2, fc1_dim=12, fc2_dim=12)"
-;
-;  ]
-;  create-mice 1 [
-;    set color black
-;    set shape "mouse"
-;    set fruits 1
-;    set poisons 1
-;    set size 2
-;    set last-state [0 0 0 0 0 0 0 0 0]
-;    set reward 0
-;    set action 0
-;    py:set "id" who
-;    py:run "agents[id] = q.Agent(0.99,0.7,0.01,9,64,3,fc1_dim=16,fc2_dim=16)"
-;  ]
   reset-ticks
 end
 
 to go
-  resupply
-  ask vis [die]
-  ask mice [
-    mice-act
-    if ticks mod 1000 = 0 [calculate-ratio]
-  ]
+  ask hawks [mice-act]
+  ask mice [mice-act]
   tick
 end
 
-to calculate-ratio
-  if fruits = 0 [set fruits 1]
-  if poisons = 0 [set poisons 1]
-  set ratios lput (fruits / (fruits + poisons)) ratios
-  if length ratios > 10 [set ratios but-first ratios]
-  set fruits 0
-  set poisons 0
+to-report observations
+  let result []
+  repeat 12 [
+    set result sentence result observe-cone 30 7
+    lt 30
+  ]
+  report map [i -> i / 7.0] result
+end
+
+to-report observe-cone [angle depth]
+  let result []
+  let wall min-one-of patches in-cone depth angle with [pcolor = white][distance myself]
+  let min-dist ifelse-value wall = nobody [depth][distance wall]
+  let near other turtles in-cone depth angle
+  set result lput (ifelse-value min-dist < depth [depth - min-dist / 2][0.0]) result
+  let h min-one-of near with [is-hawk? self] [distance myself]
+  (if-else
+    h = nobody
+    [set result lput 0.0 result]
+    [distance myself] of h > min-dist
+    [set result lput 0.0 result]
+    [set result lput (depth - (([distance myself] of h) / 2)) result]
+  )
+  let m min-one-of near with [is-mouse? self] [distance myself]
+  (if-else
+    m = nobody
+    [set result lput 0.0 result]
+    [distance myself] of m > min-dist
+    [set result lput 0.0 result]
+    [set result lput (depth - (([distance myself] of m) / 2)) result]
+  )
+  report result
 end
 
 to mice-act
@@ -105,7 +94,7 @@ to mice-act
   py:set "state" last-state
   py:set "new_state" state
   py:set "reward" reward
-  py:set "terminal" term
+  py:set "terminal" 1
   py:set "action" action
   py:run "agents[id].store_transition(state, action, reward, new_state, terminal)"
   py:run "agents[id].learn()"
@@ -114,11 +103,11 @@ to mice-act
   set action py:runresult "agents[id].choose_action(obs)"
   (ifelse
     action = 0
-    [lt 20]
+    [lt 15]
     action = 1
-    [rt 20]
+    [rt 15]
     action = 2
-    [fd 0.4]
+    [if [pcolor = 52] of patch-ahead 0.4 [fd 0.4]]
   )
   do-rewards
   ;show word "S:" state
@@ -126,180 +115,102 @@ to mice-act
   ;ask other turtles in-cone 7 60 [hatch-vis 1 [set color blue set shape "dot"]]
 end
 
-to resupply
-  if count poison < num-poison [
-    ask n-of (num-poison - count poison) patches with [count poison-here = 0 and count fruit-here = 0] [
-      sprout-poison 1 [
-        set color magenta
-        set shape "poison"
-      ]
-    ]
-  ]
-  if count fruit < num-fruit [
-    ask n-of (num-fruit - count fruit) patches with [count fruit-here = 0 and count poison-here = 0] [
-      sprout-fruit 1 [
-        set color red
-        set shape "fruit"
-      ]
-    ]
-  ]
-end
-
-to-report observations
-  let obs []
-  let near other turtles in-cone 7 60
-  rt 20
-  let m min-one-of near with [is-mouse? self] in-cone 7 20 [distance myself]
-  if-else m = nobody [
-    set obs lput 0 obs
-  ][
-    set obs lput (7 - ((distance m) / 2)) obs
-  ]
-  let p min-one-of near with [is-a-poison? self] in-cone 7 20 [distance myself]
-  if-else p = nobody [
-    set obs lput 0 obs
-  ][
-    set obs lput (7 - ((distance p) / 2)) obs
-  ]
-  let f min-one-of near with [is-a-fruit? self] in-cone 7 20 [distance myself]
-  if-else f = nobody [
-    set obs lput 0 obs
-  ][
-    set obs lput (7 - ((distance f) / 2)) obs
-  ]
-  lt 20
-  set m min-one-of near with [is-mouse? self] in-cone 7 20 [distance myself]
-  if-else m = nobody [
-    set obs lput 0 obs
-  ][
-    set obs lput (7 - ((distance m) / 2)) obs
-  ]
-  set p min-one-of near with [is-a-poison? self] in-cone 7 20 [distance myself]
-  if-else p = nobody [
-    set obs lput 0 obs
-  ][
-    set obs lput (7 - ((distance p) / 2)) obs
-  ]
-  set f min-one-of near with [is-a-fruit? self] in-cone 7 20 [distance myself]
-  if-else f = nobody [
-    set obs lput 0 obs
-  ][
-    set obs lput (7 - ((distance f) / 2)) obs
-  ]
-  lt 20
-  set m min-one-of near with [is-mouse? self] in-cone 7 20 [distance myself]
-  if-else m = nobody [
-    set obs lput 0 obs
-  ][
-    set obs lput (7 - ((distance m) / 2)) obs
-  ]
-  set p min-one-of near with [is-a-poison? self] in-cone 7 20 [distance myself]
-  if-else p = nobody [
-    set obs lput 0 obs
-  ][
-    set obs lput (7 - ((distance p) / 2)) obs
-  ]
-  set f min-one-of near with [is-a-fruit? self] in-cone 7 20 [distance myself]
-  if-else f = nobody [
-    set obs lput 0 obs
-  ][
-    set obs lput (7 - ((distance f) / 2)) obs
-  ]
-  rt 20
-;  set obs map [i -> i / 7] obs
-;  (ifelse
-;    action = 0
-;    [set obs sentence obs [1.0 0 0] ]
-;    action = 1
-;    [set obs sentence obs [0 1.0 0] ]
-;    action = 2
-;    [set obs sentence obs [0 0 1.0] ])
-  report obs
-end
-
-
 to setup-python-environment
   py:setup py:python
   py:run "import qlearnnlogo as q"
+  py:run "import pickle"
   py:run "agents = dict()"
 end
 
-
 to do-rewards
-  set term 1
-  (if-else
-    reward-type = 1
+  if-else is-hawk? self [
+    set reward 0
+    if any? mice in-radius 0.5 with [not dead?] [
+      set reward 20
+      set score score + 1
+      ask one-of mice in-radius 0.5 with [not dead?] [set dead? true]
+    ]
+  ]
+  [
+    ifelse dead? [
+      set reward -20
+      set score score - 1
+      move-to one-of patches with [pcolor = 52 and not any? hawks-here and not any? mice-here]
+      set dead? false
+    ]
     [
       set reward 0
     ]
-    reward-type = 2
-    [
-      set reward 1
-    ]
-    reward-type = 3
-    [
-      if any? (poison in-cone 7 60) [
-        let nearest-poison min-one-of (poison in-cone 7 60) [distance myself]
-        let p-d distance nearest-poison
-        set reward max (list (-5) (- (1 / p-d)))
-      ]
-      if any? (fruit in-cone 7 60) [
-        let nearest-fruit min-one-of (fruit in-cone 7 60) [distance myself]
-        let f-d distance nearest-fruit
-        set reward min (list (5)  (1 / f-d))
-      ]
-    ]
-    reward-type = 4
-    [
-      set reward -1
-    ]
-  )
-  let near-poison poison in-radius 0.5
-  if any? near-poison [
-    ask one-of near-poison [
-      die
-    ]
-    set poisons poisons + 1
-    set score score - 1
-    (if-else
-      reward-type = 1 or reward-type = 3
-      [
-        set reward -5
-      ]
-      reward-type = 2
-      [
-        set reward -1
-        set term 0
-      ]
-      reward-type = 4
-      [
-        set reward -50
-      ]
-    )
   ]
-  let near-fruit fruit in-radius 0.5
-  if any? near-fruit [
-    ask one-of near-fruit [
-      die
-    ]
-    set fruits fruits + 1
-    set score score + 1
-    (if-else
-      reward-type = 1 or reward-type = 3
-      [
-        set reward 5
-      ]
-      reward-type = 2
-      [
-        set reward 50
-      ]
-      reward-type = 4
-      [
-        set reward 10
-      ]
-    )
-  ]
+end
 
+to-report new-params
+  let result [] ; 1. Discount factor 0.9999: * 2 ^ (0 - 9) Learning rate: 0.002 ^ (1 /(0.85 - 1.5)) Batch: 2^(5 6 7 8), Layers: (2 - 5), FC1: 36 - 128, FC2: 16 - 128, eps_dec: 0.99995 ^ 2 ^ (0 - 10)
+  set result lput random-float 10 result
+  set result lput ((random-float 0.65) + 0.85) result
+  set result lput ((random-float 3) + 5) result
+  set result lput ((random 4) + 2) result
+  set result lput ((random 93) + 36) result
+  set result lput ((random 113) + 16) result
+  set result lput (random-float 10) result
+  report result
+end
+
+to-report format-params [p]
+  let results []
+  set results lput (0.9999 ^ (2 ^ (item 0 p))) results
+  set results lput (0.002 ^ (1 / (item 1 p))) results
+  set results lput (round (2 ^ (item 2 p))) results
+  set results lput (item 3 p) results
+  set results lput (item 4 p) results
+  set results lput (item 5 p) results
+  set results lput (0.99995 ^ (2 ^ (item 6 p))) results
+  report results
+end
+
+to-report mutate [p]
+  let result []
+  set result lput min list 10 (max list ((item 0 p) + random-normal 0 0.2) 0) result
+  set result lput min list 1.5 (max list ((item 1 p) + random-normal 0 0.05) 0.85) result
+  set result lput min list 8 (max list ((item 2 p) + random-normal 0 0.1) 5) result
+  set result lput min list 5 (max list (item 3 p + ifelse-value (random-float 1 < 0.3) [0][(random 3) - 1]) 2) result
+  set result lput min list 128 (max list (item 4 p + ifelse-value (random-float 1 < 0.3) [0][(random 9) - 4]) 36) result
+  set result lput min list 128 (max list (item 5 p + ifelse-value (random-float 1 < 0.3) [0][(random 9) - 4]) 16) result
+  set result lput min list 10 (max list ((item 0 p) + random-normal 0 0.2) 0) result
+  report result
+end
+
+to make-next-gen
+  let hawk-params map [i -> [params] of i] sort-on [score] max-n-of 4 hawks [score]
+  let mice-params map [i -> [params] of i] sort-on [score] max-n-of 4 mice [score]
+  ask turtles [set params false]
+
+  ask n-of 4 mice with [params = false][reset-turtle mutate item 3 mice-params]
+  ask n-of 3 mice with [params = false][reset-turtle mutate item 2 mice-params]
+  ask n-of 2 mice with [params = false][reset-turtle mutate item 1 mice-params]
+  ask n-of 1 mice with [params = false][reset-turtle mutate item 0 mice-params]
+
+  ask n-of 4 hawks with [params = false][reset-turtle mutate item 3 hawk-params]
+  ask n-of 3 hawks with [params = false][reset-turtle mutate item 2 hawk-params]
+  ask n-of 2 hawks with [params = false][reset-turtle mutate item 1 hawk-params]
+  ask n-of 1 hawks with [params = false][reset-turtle mutate item 0 hawk-params]
+end
+
+to show-stats
+  clear-output
+  foreach range (count turtles) [x -> ask turtle x [output-show sentence score (format-params params)]]
+end
+
+to reset-turtle [p]
+  set params p
+  set reward 0
+  set action 0
+  set score 0
+  set last-state n-values 36 [0]
+  if is-mouse? self [set dead? false]
+  py:set "params" format-params params
+  py:set "id" who
+  py:run "agents[id] = q.AgentNormalBatch(params[0],0.5,params[1],36,params[2],3, layers=params[3], fc1_dim=params[4], fc2_dim=params[5], eps_dec = params[6])"
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -330,9 +241,9 @@ ticks
 30.0
 
 BUTTON
-130
+17
 15
-193
+80
 48
 NIL
 setup
@@ -346,41 +257,11 @@ NIL
 NIL
 1
 
-SLIDER
-23
-52
-195
-85
-num-fruit
-num-fruit
-0
-100
-100.0
-1
-1
-NIL
-HORIZONTAL
-
-SLIDER
-23
-90
-195
-123
-num-poison
-num-poison
-0
-100
-100.0
-1
-1
-NIL
-HORIZONTAL
-
 BUTTON
-63
-15
-126
-48
+17
+50
+80
+83
 NIL
 go
 T
@@ -394,12 +275,12 @@ NIL
 1
 
 BUTTON
-23
-126
-93
-159
-Epsilon
-show py:runresult \"agents[200].epsilon\"
+32
+234
+95
+267
+save
+(py:run\n\"with open('agent_brains.p', 'wb') as filehandler:\"\n\"   pickle.dump(agents, filehandler)\"\n )
 NIL
 1
 T
@@ -410,47 +291,63 @@ NIL
 NIL
 1
 
-PLOT
-882
-10
-1243
-345
-Fruit Ratio
-1K Ticks
-Fruit / (Fruit + Posion)
-0.0
-10.0
-0.0
-1.0
-true
-false
-"" ""
-PENS
-"Black Mouse" 1.0 0 -16777216 true "" "if ticks mod 1000 = 0 and (is-mouse? turtle (num-fruit + num-poison + 3)) [plot [mean ratios] of mouse (num-fruit + num-poison + 3)]"
-"Grey Mouse" 1.0 0 -7500403 true "" "if ticks mod 1000 = 0 and (is-mouse? turtle (num-fruit + num-poison + 2)) [plot [mean ratios] of mouse (num-fruit + num-poison + 2)]"
-"Brown Mouse" 1.0 0 -6459832 true "" "if ticks mod 1000 = 0 and (is-mouse? turtle (num-fruit + num-poison + 1)) [plot [mean ratios] of mouse (num-fruit + num-poison + 1)]"
-"White Mouse" 1.0 0 -2064490 true "" "if ticks mod 1000 = 0 and (is-mouse? turtle (num-fruit + num-poison)) [plot [mean ratios] of mouse (num-fruit + num-poison)]"
+BUTTON
+101
+234
+164
+267
+load
+(py:run\n\"with open('agent_brains.p', 'rb') as filehandler:\"\n\"   agents = pickle.load(filehandler)\"\n )
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
 
-PLOT
+OUTPUT
 882
-348
-1243
-683
-Scores
-1K Ticks
-Score
-0.0
-10.0
-0.0
-10.0
-true
-false
-"" ""
-PENS
-"Black Mouse" 1.0 0 -16777216 true "" "if ticks mod 1000 = 0 and (is-mouse? turtle (num-fruit + num-poison + 3)) [plot [score] of mouse (num-fruit + num-poison + 3)]"
-"Grey Mouse" 1.0 0 -7500403 true "" "if ticks mod 1000 = 0 and (is-mouse? turtle (num-fruit + num-poison + 2)) [plot [score] of mouse (num-fruit + num-poison + 2)]"
-"Brown Mouse" 1.0 0 -6459832 true "" "if ticks mod 1000 = 0 and (is-mouse? turtle (num-fruit + num-poison + 1)) [plot [score] of mouse (num-fruit + num-poison + 1)]"
-"White Mouse" 1.0 0 -2064490 true "" "if ticks mod 1000 = 0 and (is-mouse? turtle (num-fruit + num-poison)) [plot [score] of mouse (num-fruit + num-poison)]"
+11
+1536
+312
+11
+
+BUTTON
+882
+473
+975
+506
+NIL
+show-stats
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+882
+437
+1037
+470
+NIL
+make-next-gen
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -545,18 +442,19 @@ Polygon -16777216 true false 162 80 132 78 134 135 209 135 194 105 189 96 180 89
 Circle -7500403 true true 47 195 58
 Circle -7500403 true true 195 195 58
 
-cheese
-false
+cat
+true
 0
-Polygon -1184463 true false 81 52 276 142 81 232 51 202 36 157 36 127 51 82 81 52 81 52
-Circle -16777216 true false 72 81 30
-Circle -16777216 true false 107 121 24
-Circle -16777216 true false 153 124 40
-Circle -16777216 true false 74 175 18
-Circle -16777216 true false 106 165 33
-Circle -16777216 true false 55 131 29
-Circle -16777216 true false 205 126 26
-Circle -16777216 true false 134 93 24
+Polygon -7500403 true true 16 150 16 135 46 120 52 93 76 120 91 120 106 105 151 105 166 120 196 105 241 105 256 120 256 135 286 150 299 168 283 209 242 233 226 225 271 195 279 170 256 165 256 180 241 195 196 195 166 180 151 195 106 195 91 180 76 180 49 209 46 180 16 165
+Circle -13345367 true false 30 154 12
+Circle -13345367 true false 30 131 12
+Polygon -2064490 true false 17 155 18 143 24 151
+Line -16777216 false 21 161 17 191
+Line -16777216 false 21 139 17 109
+Line -16777216 false 28 137 24 107
+Line -16777216 false 28 163 24 193
+Polygon -2064490 true false 49 180 59 194 52 205
+Polygon -2064490 true false 49 120 59 106 52 95
 
 circle
 false
@@ -644,11 +542,22 @@ Circle -16777216 true false 113 68 74
 Polygon -10899396 true false 189 233 219 188 249 173 279 188 234 218
 Polygon -10899396 true false 180 255 150 210 105 210 75 240 135 240
 
-fruit
-false
+hawk
+true
 0
-Polygon -7500403 true true 150 90 135 75 75 90 60 120 60 180 105 225 195 225 240 180 240 120 225 90 165 75 150 90
-Polygon -10899396 true false 150 90 120 30 150 45 165 15
+Polygon -7500403 true true 150 15 135 45 120 60 135 75 30 105 0 165 135 120 120 195 180 195 165 120 300 165 270 105 165 75 180 60 165 45 150 15
+Polygon -7500403 true true 30 165 45 135 135 120 135 135
+Polygon -7500403 true true 270 165 255 135 165 120 165 135
+Polygon -7500403 true true 255 180 240 150 165 120 165 150
+Polygon -7500403 true true 45 180 60 150 135 120 135 150
+Polygon -7500403 true true 165 150 195 225 150 195
+Polygon -7500403 true true 135 150 105 225 150 195
+Polygon -7500403 true true 135 150 120 240 165 225
+Polygon -7500403 true true 165 165 180 240 135 225
+Polygon -2674135 true false 165 45 150 30 150 15 165 45 150 30
+Polygon -2674135 true false 135 45 150 30 150 15 135 45 150 30
+Polygon -13791810 true false 165 45 165 60 165 60 150 45 165 45
+Polygon -13791810 true false 135 45 135 60 135 60 150 45 135 45
 
 house
 false
@@ -724,16 +633,6 @@ Polygon -7500403 true true 165 180 165 210 225 180 255 120 210 135
 Polygon -7500403 true true 135 105 90 60 45 45 75 105 135 135
 Polygon -7500403 true true 165 105 165 135 225 105 255 45 210 60
 Polygon -7500403 true true 135 90 120 45 150 15 180 45 165 90
-
-poison
-false
-0
-Polygon -6459832 true false 105 45 195 45 180 75 225 225 75 225 120 75 105 45
-Polygon -8630108 true false 135 90 165 90 180 105 180 135 165 165 135 165 120 135 120 105 135 90 135 90
-Polygon -6459832 true false 169 110 169 125 154 125 154 110 169 110 169 110
-Polygon -6459832 true false 131 110 131 125 146 125 146 110 131 110 131 110
-Polygon -8630108 true false 105 210 105 195 195 165 195 180
-Polygon -8630108 true false 105 165 105 180 195 210 195 195
 
 sheep
 false
