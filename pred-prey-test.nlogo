@@ -2,12 +2,53 @@ extensions [ py ]
 
 breed [mice mouse]
 breed [hawks hawk]
+globals [
 
-turtles-own [reward last-state action score params]
+  generation
+  mice-avg-dfs
+  hawks-avg-dfs
+  mice-avg-lrs
+  hawks-avg-lrs
+  mice-avg-batch
+  hawks-avg-batch
+  mice-avg-lyrs
+  hawks-avg-lyrs
+  mice-avg-pls
+  hawks-avg-pls
+  mice-avg-sls
+  hawks-avg-sls
+  mice-avg-eds
+  hawks-avg-eds
+  mice-avg-scrs
+  hawks-avg-scrs
+  mice-avg-sscrs
+  hawks-avg-sscrs
+]
+turtles-own [reward last-state action score scaled-score params]
 mice-own [ dead? ]
 
 to setup
   clear-all
+  set generation 0
+  set mice-avg-dfs []
+  set hawks-avg-dfs []
+  set mice-avg-lrs []
+  set hawks-avg-lrs []
+  set mice-avg-batch []
+  set hawks-avg-batch []
+  set mice-avg-lyrs []
+  set hawks-avg-lyrs []
+  set mice-avg-pls []
+  set hawks-avg-pls []
+  set mice-avg-sls []
+  set hawks-avg-sls []
+  set mice-avg-eds []
+  set hawks-avg-eds []
+  set mice-avg-scrs []
+  set hawks-avg-scrs []
+  set mice-avg-sscrs []
+  set hawks-avg-sscrs []
+
   setup-python-environment
   ask patches [set pcolor 52]
   ;ask patches with [abs pxcor = 12 and abs pycor >= 8 and abs pycor <= 12] [set pcolor white]
@@ -49,6 +90,7 @@ to setup
 end
 
 to go
+  if ticks != 0 and ((ticks mod gen-length) = 0) [make-next-gen]
   ask hawks [mice-act]
   ask mice [mice-act]
   tick
@@ -181,6 +223,23 @@ to-report mutate [p]
 end
 
 to make-next-gen
+
+  let d 256 * 5 * (128 ^ 2) * (128 ^ 2)
+  ask hawks [
+    let complexity (item 2 (format-params params)) * (item 3 params) * (item 4 params) * (item 5 params)
+    let ratio (1 - (complexity / d)) ^ (1 / 4)
+    set scaled-score score * ratio
+  ]
+  ask mice [
+    let complexity (item 2 (format-params params)) * (item 3 params) * (item 4 params) * (item 5 params)
+    let ratio (complexity / d) ^ (1 / 4)
+    set scaled-score score * ratio
+  ]
+
+  show-stats
+  do-plotting
+  set generation generation + 1
+
   let hawk-params map [i -> [params] of i] sort-on [score] max-n-of 4 hawks [score]
   let mice-params map [i -> [params] of i] sort-on [score] max-n-of 4 mice [score]
   ask turtles [set params false]
@@ -197,8 +256,96 @@ to make-next-gen
 end
 
 to show-stats
-  clear-output
+  output-print (sentence "Generation:" generation)
   foreach range (count turtles) [x -> ask turtle x [output-show sentence score (format-params params)]]
+end
+
+to do-plotting
+
+  let mice-avg-df mean [item 0 format-params params] of mice
+  let hawks-avg-df mean [item 0 format-params params] of hawks
+  let mice-avg-lr mean [item 1 format-params params] of mice
+  let hawks-avg-lr mean [item 1 format-params params] of hawks
+  let mice-avg-bt mean [item 2 format-params params] of mice
+  let hawks-avg-bt mean [item 2 format-params params] of hawks
+  let mice-avg-lyr mean [item 3 format-params params] of mice
+  let hawks-avg-lyr mean [item 3 format-params params] of hawks
+  let mice-avg-pl mean [item 4 format-params params] of mice
+  let hawks-avg-pl mean [item 4 format-params params] of hawks
+  let mice-avg-sl mean [item 5 format-params params] of mice
+  let hawks-avg-sl mean [item 5 format-params params] of hawks
+  let mice-avg-ep mean [item 6 format-params params] of mice
+  let hawks-avg-ep mean [item 6 format-params params] of hawks
+  let mice-avg-scr mean [score] of mice
+  let hawks-avg-scr mean [score] of hawks
+  let mice-avg-sscr mean [scaled-score] of mice
+  let hawks-avg-sscr mean [scaled-score] of hawks
+
+  set mice-avg-dfs lput mice-avg-df mice-avg-dfs
+  set hawks-avg-dfs lput hawks-avg-df hawks-avg-dfs
+  set mice-avg-lrs lput mice-avg-lr mice-avg-lrs
+  set hawks-avg-lrs lput hawks-avg-lr hawks-avg-lrs
+  set mice-avg-batch lput mice-avg-bt mice-avg-batch
+  set hawks-avg-batch lput hawks-avg-bt hawks-avg-batch
+  set mice-avg-lyrs lput mice-avg-lyr mice-avg-lyrs
+  set hawks-avg-lyrs lput hawks-avg-lyr hawks-avg-lyrs
+  set mice-avg-pls lput mice-avg-pl mice-avg-pls
+  set hawks-avg-pls lput hawks-avg-pl hawks-avg-pls
+  set mice-avg-sls lput mice-avg-sl mice-avg-sls
+  set hawks-avg-sls lput hawks-avg-sl hawks-avg-sls
+  set mice-avg-eds lput mice-avg-ep mice-avg-eds
+  set hawks-avg-eds lput hawks-avg-ep hawks-avg-eds
+  set mice-avg-scrs lput mice-avg-scr mice-avg-scrs
+  set hawks-avg-scrs lput hawks-avg-scr hawks-avg-scrs
+  set mice-avg-sscrs lput mice-avg-sscr mice-avg-sscrs
+  set hawks-avg-sscrs lput hawks-avg-sscr hawks-avg-sscrs
+
+  set-current-plot "Average Discount Factor"
+  set-current-plot-pen "Hawks"
+  plotxy generation hawks-avg-df
+  set-current-plot-pen "Mice"
+  plotxy generation mice-avg-df
+  set-current-plot "Average Learning Rate"
+  set-current-plot-pen "Hawks"
+  plotxy generation hawks-avg-lr
+  set-current-plot-pen "Mice"
+  plotxy generation mice-avg-lr
+  set-current-plot "Average Batch Size"
+  set-current-plot-pen "Hawks"
+  plotxy generation hawks-avg-bt
+  set-current-plot-pen "Mice"
+  plotxy generation mice-avg-bt
+  set-current-plot "Average Layers"
+  set-current-plot-pen "Hawks"
+  plotxy generation hawks-avg-lyr
+  set-current-plot-pen "Mice"
+  plotxy generation mice-avg-lyr
+  set-current-plot "Average Primary Layer Dimension"
+  set-current-plot-pen "Hawks"
+  plotxy generation hawks-avg-pl
+  set-current-plot-pen "Mice"
+  plotxy generation mice-avg-pl
+  set-current-plot "Average Secondary Layer Dimension"
+  set-current-plot-pen "Hawks"
+  plotxy generation hawks-avg-sl
+  set-current-plot-pen "Mice"
+  plotxy generation mice-avg-sl
+  set-current-plot "Average Epsilon Decrement"
+  set-current-plot-pen "Hawks"
+  plotxy generation hawks-avg-ep
+  set-current-plot-pen "Mice"
+  plotxy generation mice-avg-ep
+  set-current-plot "Average Scores"
+  set-current-plot-pen "Hawks"
+  plotxy generation hawks-avg-scr
+  set-current-plot-pen "Mice"
+  plotxy generation mice-avg-scr
+  set-current-plot "Average Scaled Scores"
+  set-current-plot-pen "Hawks"
+  plotxy generation hawks-avg-sscr
+  set-current-plot-pen "Mice"
+  plotxy generation mice-avg-sscr
+
 end
 
 to reset-turtle [p]
@@ -275,12 +422,12 @@ NIL
 1
 
 BUTTON
-32
-234
-95
-267
+16
+186
+79
+219
 save
-(py:run\n\"with open('agent_brains.p', 'wb') as filehandler:\"\n\"   pickle.dump(agents, filehandler)\"\n )
+py:set \"fname\" f-name\n(py:run\n\"with open(fname, 'wb') as filehandler:\"\n\"   pickle.dump(agents, filehandler)\"\n )
 NIL
 1
 T
@@ -292,12 +439,12 @@ NIL
 1
 
 BUTTON
-101
-234
-164
-267
+85
+186
+148
+219
 load
-(py:run\n\"with open('agent_brains.p', 'rb') as filehandler:\"\n\"   agents = pickle.load(filehandler)\"\n )
+py:set \"fname\" f-name\n(py:run\n\"with open(fname, 'rb') as filehandler:\"\n\"   agents = pickle.load(filehandler)\"\n )
 NIL
 1
 T
@@ -311,43 +458,226 @@ NIL
 OUTPUT
 882
 11
-1536
+1535
 312
 11
 
-BUTTON
+PLOT
+1087
+316
+1287
+466
+Average Learning Rate
+Generation
+Learning Rate
+0.0
+10.0
+6.0E-4
+0.016
+true
+false
+"" ""
+PENS
+"Hawks" 1.0 0 -13345367 true "" ""
+"Mice" 1.0 0 -2674135 true "" ""
+
+PLOT
 882
-473
-975
-506
-NIL
-show-stats
-NIL
+316
+1082
+466
+Average Discount Factor
+Generation
+Discount Factor
+0.0
+10.0
+0.9
+1.0
+true
+false
+"" ""
+PENS
+"Hawks" 1.0 0 -13345367 true "" ""
+"Mice" 1.0 0 -2674135 true "" ""
+
+PLOT
+1291
+316
+1491
+466
+Average Batch Size
+Generation
+Batch Size
+0.0
+10.0
+32.0
+256.0
+true
+false
+"" ""
+PENS
+"Hawks" 1.0 0 -13345367 true "" ""
+"Mice" 1.0 0 -2674135 true "" ""
+
+PLOT
+882
+470
+1082
+620
+Average Layers
+Generation
+Layers
+0.0
+10.0
+2.0
+5.0
+true
+false
+"" ""
+PENS
+"Hawks" 1.0 0 -13345367 true "" ""
+"Mice" 1.0 0 -2674135 true "" ""
+
+PLOT
+1087
+471
+1287
+621
+Average Primary Layer Dimension
+Generation
+Dimension
+0.0
+10.0
+36.0
+128.0
+true
+false
+"" ""
+PENS
+"Hawks" 1.0 0 -13345367 true "" ""
+"Mice" 1.0 0 -2674135 true "" ""
+
+PLOT
+1291
+471
+1491
+621
+Average Secondary Layer Dimension
+Generation
+Dimension
+0.0
+10.0
+16.0
+128.0
+true
+false
+"" ""
+PENS
+"Hawks" 1.0 0 -13345367 true "" ""
+"Mice" 1.0 0 -2674135 true "" ""
+
+INPUTBOX
+16
+124
+148
+184
+f-name
+agent_brains.p
 1
-T
-OBSERVER
+0
+String
+
+PLOT
+1087
+625
+1287
+775
+Average Epsilon Decrement
+Generation
+Epsilon
+0.0
+10.0
+0.95
+1.0
+true
+false
+"" ""
+PENS
+"Hawks" 1.0 0 -13345367 true "" ""
+"Mice" 1.0 0 -2674135 true "" ""
+
+PLOT
+882
+625
+1082
+775
+Average Scores
+Generation
+Score
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"Hawks" 1.0 0 -13345367 true "" ""
+"Mice" 1.0 0 -2674135 true "" ""
+
+SLIDER
+15
+228
+187
+261
+gen-length
+gen-length
+1000
+100000
+1000.0
+1000
+1
 NIL
-NIL
-NIL
-NIL
+HORIZONTAL
+
+TEXTBOX
+806
+700
+877
+727
+Hawks
+22
+105.0
 1
 
-BUTTON
-882
-437
-1037
-470
-NIL
-make-next-gen
-NIL
+TEXTBOX
+815
+725
+870
+752
+Mice
+22
+15.0
 1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
+
+PLOT
+1291
+626
+1491
+776
+Average Scaled Scores
+Generation
+Score
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"Hawks" 1.0 0 -13345367 true "" ""
+"Mice" 1.0 0 -2674135 true "" ""
 
 @#$#@#$#@
 ## WHAT IS IT?
