@@ -50,11 +50,16 @@ to setup
   set hawks-avg-sscrs []
 
   setup-python-environment
+
   ask patches [set pcolor 52]
-  ;ask patches with [abs pxcor = 12 and abs pycor >= 8 and abs pycor <= 12] [set pcolor white]
-  ;ask patches with [abs pycor = 12 and abs pxcor >= 8 and abs pxcor <= 12] [set pcolor white]
-  ;ask patches with [pxcor = 0 and abs pycor <= 8 and abs pycor >= 4][set pcolor white]
-  ;ask patches with [pycor = 0 and abs pxcor <= 8 and abs pxcor >= 4][set pcolor white]
+
+  if walls-on? [
+    ask patches with [abs pxcor = 12 and abs pycor >= 8 and abs pycor <= 12] [set pcolor white]
+    ask patches with [abs pycor = 12 and abs pxcor >= 8 and abs pxcor <= 12] [set pcolor white]
+    ask patches with [pxcor = 0 and abs pycor <= 8 and abs pycor >= 4][set pcolor white]
+    ask patches with [pycor = 0 and abs pxcor <= 8 and abs pxcor >= 4][set pcolor white]
+  ]
+
   create-hawks 10 [
     set size 2
     set color one-of [blue red yellow cyan]
@@ -90,7 +95,7 @@ to setup
 end
 
 to go
-  if ticks != 0 and ((ticks mod gen-length) = 0) [make-next-gen]
+  if ticks != 0 and ((ticks mod gen-length) = 0) and generational-evolution? [make-next-gen]
   ask hawks [mice-act]
   ask mice [mice-act]
   tick
@@ -168,14 +173,14 @@ to do-rewards
   if-else is-hawk? self [
     set reward 0
     if any? mice in-radius 0.5 with [not dead?] [
-      set reward 20
+      set reward 1
       set score score + 1
       ask one-of mice in-radius 0.5 with [not dead?] [set dead? true]
     ]
   ]
   [
     ifelse dead? [
-      set reward -20
+      set reward -1
       set score score - 1
       move-to one-of patches with [pcolor = 52 and not any? hawks-here and not any? mice-here]
       set dead? false
@@ -222,26 +227,38 @@ to-report mutate [p]
   report result
 end
 
+to scale-scores
+  let score-range max [score] of hawks - min [score] of hawks
+  let score-floor min [score] of hawks
+  ask hawks [
+    set scaled-score ((score - score-floor) + (0.2 * score-range)) / (1.2 * score-range)
+    py:set "id" who
+    let net-size py:runresult "agents[id].Q_eval.model_size()" +  ((item 2 (format-params params)) * 100)
+    let ratio (1 - (net-size / 80259))
+    set scaled-score scaled-score * ratio
+  ]
+
+  set score-range max [score] of mice - min [score] of mice
+  set score-floor min [score] of mice
+  ask mice  [
+    set scaled-score ((score - score-floor) + (0.2 * score-range)) / (1.2 * score-range)
+    py:set "id" who
+    let net-size py:runresult "agents[id].Q_eval.model_size()" +  ((item 2 (format-params params)) * 100)
+    let ratio (1 - (net-size / 80259))
+    set scaled-score scaled-score * ratio
+  ]
+end
+
 to make-next-gen
 
-  let d 256 * 5 * (128 ^ 2) * (128 ^ 2)
-  ask hawks [
-    let complexity (item 2 (format-params params)) * (item 3 params) * (item 4 params) * (item 5 params)
-    let ratio (1 - (complexity / d)) ^ (1 / 4)
-    set scaled-score score * ratio
-  ]
-  ask mice [
-    let complexity (item 2 (format-params params)) * (item 3 params) * (item 4 params) * (item 5 params)
-    let ratio (complexity / d) ^ (1 / 4)
-    set scaled-score score * ratio
-  ]
+  scale-scores
 
   show-stats
   do-plotting
   set generation generation + 1
 
-  let hawk-params map [i -> [params] of i] sort-on [score] max-n-of 4 hawks [score]
-  let mice-params map [i -> [params] of i] sort-on [score] max-n-of 4 mice [score]
+  let hawk-params map [i -> [params] of i] sort-on [scaled-score] max-n-of 4 hawks [scaled-score]
+  let mice-params map [i -> [params] of i] sort-on [scaled-score] max-n-of 4 mice [scaled-score]
   ask turtles [set params false]
 
   ask n-of 4 mice with [params = false][reset-turtle mutate item 3 mice-params]
@@ -257,7 +274,7 @@ end
 
 to show-stats
   output-print (sentence "Generation:" generation)
-  foreach range (count turtles) [x -> ask turtle x [output-show sentence score (format-params params)]]
+  foreach range (count turtles) [x -> ask turtle x [output-show (sentence score scaled-score (format-params params))]]
 end
 
 to do-plotting
@@ -671,13 +688,35 @@ Score
 0.0
 10.0
 0.0
-10.0
+1.0
 true
 false
 "" ""
 PENS
 "Hawks" 1.0 0 -13345367 true "" ""
 "Mice" 1.0 0 -2674135 true "" ""
+
+SWITCH
+11
+265
+197
+298
+generational-evolution?
+generational-evolution?
+0
+1
+-1000
+
+SWITCH
+88
+36
+194
+69
+walls-on?
+walls-on?
+1
+1
+-1000
 
 @#$#@#$#@
 ## WHAT IS IT?

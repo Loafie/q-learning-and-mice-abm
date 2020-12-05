@@ -4,7 +4,10 @@ import torch.nn.functional as F
 import torch.optim as optim
 import numpy as np
 
+# parameter_count =  sum(p.numel() for p in model.parameters() if p.requires_grad)
+
 class DeepQNetwork(nn.Module):
+
     def __init__(self,lr, input_dims, fc1_dims, fc2_dims, n_actions, layers):
         super(DeepQNetwork, self).__init__()
         self.input_dims = input_dims
@@ -27,6 +30,9 @@ class DeepQNetwork(nn.Module):
         self.loss = nn.MSELoss()
         self.device = T.device('cuda:0' if T.cuda.is_available() else 'cpu')
         self.to(self.device)
+
+    def model_size(self):
+        return sum(p.numel() for p in self.parameters() if p.requires_grad)
 
     def forward(self, observation):
         x = F.relu(self.fc1(observation))
@@ -100,7 +106,6 @@ class AgentNormalBatch(object):
             self.Q_eval.optimizer.step()
             self.epsilon = max(self.epsilon * self.eps_dec, self.eps_min)
 
-
 class AgentOneShot(object):
     def __init__(self, gamma, epsilon, lr, input_dims, batch_size, n_actions, layers=4, fc1_dim = 64, fc2_dim = 64, max_mem_size=1000000, eps_min=0.01, eps_dec=0.999996):
         self.mem_cntr = 0
@@ -148,7 +153,6 @@ class AgentOneShot(object):
             loss.backward()
             self.Q_eval.optimizer.step()
             self.epsilon = max(self.epsilon * self.eps_dec, self.eps_min)
-
 
 class AgentOneShotRewardProportional(object):
     def __init__(self, gamma, epsilon, lr, input_dims, batch_size, n_actions, layers=4, fc1_dim = 64, fc2_dim = 64, max_mem_size=1000000, eps_min=0.01, eps_dec=0.999996):
@@ -288,9 +292,6 @@ class AgentBatchRewardProportional(object):
             loss.backward()
             self.Q_eval.optimizer.step()
             self.epsilon = max(self.epsilon * self.eps_dec, self.eps_min)
-
-
-
 
 class AgentBMRSRMP(object):
     def __init__(self, gamma, epsilon, lr, input_dims, batch_size, n_actions, layers=4, fc1_dim = 64, fc2_dim = 64, max_mem_size=1000000, eps_min=0.01, eps_dec=0.999996):
