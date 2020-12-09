@@ -21,5 +21,5 @@ __Press the _setup_ and then the _go_ button.__
         -webkit-transform-origin: 0 0;
     }
 </style>
-<iframe id="iframe" src="dummy-model-demo.html" width="133%" height="900" style="border:none;">
+<iframe id="iframe" src="dummy-model-demo.html" width="133%" height="900" style="border:none;" scrolling="no">
 </iframe>
