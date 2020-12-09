@@ -15,5 +15,5 @@ Agent-based modeling is way of designing computational models from the perspecti
         -webkit-transform-origin: 0 0;
     }
 </style>
-<iframe id="iframe" src="encoding-visualization.html" width="100%" height="900" style="border:none;">
+<iframe id="iframe" src="encoding-visualization.html" width="133%" height="900" style="border:none;">
 </iframe>
