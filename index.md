@@ -4,7 +4,7 @@ Agent-based modeling is way of designing computational models from the perspecti
  
 ### NetLogo Models
 
-This first ABM we used to calibrate our reinforcement learning model. A single mouse agent is placed in an environment with a fixed number of randomly placed fruit and posion vials. The agent gets a positive reward for landing on fruit and a negative reward for landing on poison. In each time step the agent can choose to turn right or left by 20 degrees or move forward.
+We used a single agent ABM to calibrate our reinforcement learning model. A single mouse agent is placed in an environment with a fixed number of randomly placed fruit and posion vials. The agent gets a positive reward for landing on fruit and a negative reward for landing on poison. In each time step the agent can choose to turn right or left by 20 degrees or move forward.
 
 The following is a demonstration, but just with a manually programmed agent heuristic.
 
@@ -22,4 +22,25 @@ __Press the _setup_ and then the _go_ button.__
     }
 </style>
 <iframe id="iframe" src="dummy-model-demo.html" width="133%" height="900" style="border:none;" scrolling="no">
+</iframe>
+
+The second model we used involved multiple predator and prey agents. The hawk agents and the mice agents can both perform only 3 actions as in the prior model: turn right or left by 20 degrees and move forward. The hawks recieve a positive reward when they get within a certain distance of a mouse. Mice recieve a negative reward when they get too close to a hawk and then are moved to a new random location in the world.
+
+Below is a demonstration that in which mice and hawks act purely randomly.
+
+__Press the _setup_ and then the _go_ button.__
+
+
+ <style type="text/css">
+    #iframe {
+        zoom: 0.75;
+        -moz-transform:scale(0.75);
+        -moz-transform-origin: 0 0;
+        -o-transform: scale(0.75);
+        -o-transform-origin: 0 0;
+        -webkit-transform: scale(0.75);
+        -webkit-transform-origin: 0 0;
+    }
+</style>
+<iframe id="iframe" src="pred-prey-dummy-demo.html" width="133%" height="900" style="border:none;" scrolling="no">
 </iframe>
