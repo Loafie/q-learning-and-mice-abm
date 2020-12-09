@@ -4,7 +4,16 @@ Agent-based modeling is way of designing computational models from the perspecti
  
 ### NetLogo Models
  
- 
- 
-<iframe src="encoding-visualization.html" width="100%" style="border:none;">
+ <style type="text/css">
+    #iframe {
+        zoom: 0.75;
+        -moz-transform:scale(0.75);
+        -moz-transform-origin: 0 0;
+        -o-transform: scale(0.75);
+        -o-transform-origin: 0 0;
+        -webkit-transform: scale(0.75);
+        -webkit-transform-origin: 0 0;
+    }
+</style>
+<iframe id="iframe" src="encoding-visualization.html" width="100%" height="900" style="border:none;">
 </iframe>
