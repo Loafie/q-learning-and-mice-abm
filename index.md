@@ -8,7 +8,7 @@ Predator/Prey systems are an ecological phenomenon that can be easily modeled us
 
 ![Image](Wolf Sheep Predation.png)
 
-<iframe src="https://www.w3schools.com" title="W3Schools Free Online Web Tutorials">
+<iframe src="https://ccl.northwestern.edu" width="100%" style="border:none;">
 </iframe>
 
 
