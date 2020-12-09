@@ -1,4 +1,15 @@
-## Welcome to GitHub Pages
+## Reinforcement Learning Using Q-Learning in a Predator/Prey Agent-Based Model with NetLogo and PyTorch 
+
+Agent-based modeling is way of designing computational models from the perspective of individual autonomous agents to study how the behavior of systems as a whole are determined by the interactions between agents and other elements of the system.
+
+[NetLogo](https://ccl.northwestern.edu/netlogo/) is a programming language and modeling environment created and maintained by the [CCL Lab](https://ccl.northwestern.edu/) at [Northwestern University](http://www.northwestern.edu/).
+
+Predator/Prey systems are an ecological phenomenon that can be easily modeled using agent-based modeling (ABM.)
+
+![Image](Wolf Sheep Predation.png)
+
+
+
 
 You can use the [editor on GitHub](https://github.com/Loafie/q-learning-and-mice-abm/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
 
