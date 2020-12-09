@@ -10,7 +10,7 @@ The following is a demonstration, but just with a manually programmed agent heur
 
 __Press the _setup_ and then the _go_ button.__
  
-<iframe id="iframe" src="dummy-model-demo.html" width="100%" height="600" style="border:none; position:absolute; top:-150px;" scrolling="no">
+<iframe id="iframe" src="dummy-model-demo.html" width="100%" height="600" style="border:none; position:relative; top:-150px;" scrolling="no">
 </iframe>
 
 The second model we used involved multiple predator and prey agents. The hawk agents and the mice agents can both perform only 3 actions as in the prior model: turn right or left by 20 degrees and move forward. The hawks recieve a positive reward when they get within a certain distance of a mouse. Mice recieve a negative reward when they get too close to a hawk and then are moved to a new random location in the world.
@@ -19,5 +19,5 @@ Below is a demonstration that in which mice and hawks act purely randomly.
 
 __Press the _setup_ and then the _go_ button.__
 
-<iframe id="iframe" src="pred-prey-dummy-demo.html" width="100%" height="600" style="border:none; position:absolute; top:-150px;" scrolling="no">
+<iframe id="iframe" src="pred-prey-dummy-demo.html" width="100%" height="600" style="border:none; position:relative; top:-150px;" scrolling="no">
 </iframe>
