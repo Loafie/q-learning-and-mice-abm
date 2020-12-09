@@ -6,6 +6,8 @@ Agent-based modeling is way of designing computational models from the perspecti
 
 Predator/Prey systems are an ecological phenomenon that can be easily modeled using agent-based modeling (ABM.)
 
+The image below is from a popular NetLogo model WolF/Sheep Predation.
+
 ![Image](Wolf Sheep Predation.png)
 
 <iframe src="encoding-visualization.html" width="100%" style="border:none;">
