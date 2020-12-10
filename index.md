@@ -2,13 +2,18 @@
 <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
 ## Evolutionary Paramter Tuning of Q-Learning Agents in a Predator/Prey Agent-Based Model
-__![Can Gurkan](mailto:gurkan@u.northwestern.edu) and ![Leif Rasmussen](mailto:leifr@u.northwestern.edu)__
+
+__[Can Gurkan](mailto:gurkan@u.northwestern.edu) and [Leif Rasmussen](mailto:leifr@u.northwestern.edu)__
+
 __COMP_SCI 496 Deep Learning - Brian Pardo__
+
  _Northwestern University_
 
 ### Introduction
 
 Agent-based modeling is way of designing computational models from the perspective of individual autonomous agents to study how the behavior of systems as a whole are determined by the interactions between agents and other elements of the system. [NetLogo](https://ccl.northwestern.edu/netlogo/) is a programming language and modeling environment created and maintained by the [CCL Lab](https://ccl.northwestern.edu/) at [Northwestern University](http://www.northwestern.edu/). Predator/Prey systems are an ecological phenomenon that can be easily modeled using agent-based modeling (ABM.) Typically in these models, the behaviors of the predator and prey agents are determined by fairly simple heuristics (often time pure randomness.) The aim of this project is to embedded reinforcement learning models into both the predator agents and the prey agents in a predator/prey ABM in NetLogo. NetLogo includes a Python extension which allows us to interact with external Python code from within a NetLogo model-and more importantly to use machine learning libraries such as PyTorch. We have created a few different NetLogo models and a Q-learning model in PyTorch that we use in this project to conduct our experiments.
+
+The main experiment we conducted using the software we built was to create an agent-based model in which agents with deep q-learning nets embedded in them would compete in rounds of predator/prey games. Initial agents would be created with random meta-parameters for their deep q-learning nets and at the end of each round (generation) the agents that performed the best would pass on their meta-parameters with some noise (mutation) to the next generation of deep q-learning agents who would then repeat the process. Through this process we observed the evolutionary optimization of the meta-parameters.
  
 ### NetLogo Models
 
