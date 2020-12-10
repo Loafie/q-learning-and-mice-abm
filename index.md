@@ -33,9 +33,9 @@ To embed reinforcement learning into the agents in our ABMs we designed an Agent
 
 In Q-learning we try to find a state-action value function for an agent. The state-action value function gives us a value for performing each action in the set of possible actions available to the agent given a state. The agent's policy can then be determined by chosing an action in a given state based on the values of the state-action function. We can do this deterministically (always chosing the maximum valued action) or probabilitistically (choose an action with a probability proportional to its value.) In deep q-learning, we train a deep net (ANN) to appoximate the state-action value function. We do this by passing reward signals from the agent's environment into the deep learning model.
 
-$$Q^{new} \larrow Q$$
+Our agent's deep neural net is initialized with random values such that that values of the state-action function are initially random as well. Using gradient descent we try to nudge our deep neural net toward approximating a good state-action function for the agent to use to make decisions in the model. We do this by keeping tract of state-action-reward transitions made by the agent in each time step. Then we use the following formula as our target Q (state-action function) value and do gradient descent over the error between this target value and the actual value produced by the deep net.
 
-In this equation we see that we would like to update the value $Q$
+$$Q_{target}(s_{last},a_{last}) = R + \gamma \dot \max_{a \in A} Q_{actual}(s_{current},a)$$
 
 
 
