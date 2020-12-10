@@ -19,5 +19,5 @@ Below is a demonstration that in which mice and hawks act purely randomly.
 
 __Press the _setup_ and then the _go_ button.__
 
-<iframe src="pred-prey-dummy-demo.html" width="100%" height="600" style="border:none; margin-top: -150px;" scrolling="no">
-</iframe>
+<div style="overflow: hidden" width="100%" height="600"><iframe src="pred-prey-dummy-demo.html" width="100%" height="600" style="border:none; margin-top: -150px;" scrolling="no">
+</iframe></div>
