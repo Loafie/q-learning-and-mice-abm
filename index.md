@@ -31,11 +31,29 @@ To embed reinforcement learning into the agents in our ABMs we designed an Agent
 
 #### Q-Learning
 
-In Q-learning we try to find a state-action value function for an agent. The state-action value function gives us a value for performing each action in the set of possible actions available to the agent given a state. The agent's policy can then be determined by chosing an action in a given state based on the values of the state-action function. We can do this deterministically (always chosing the maximum valued action) or probabilitistically (choose an action with a probability proportional to its value.) In deep q-learning, we train a deep net (ANN) to appoximate the state-action value function. We do this by passing reward signals from the agent's environment into the deep learning model.
+In Q-learning we try to find a state-action value function for an agent. The state-action value function gives us a value for performing each action in the set of possible actions available to the agent given a state. The agent's policy can then be determined by chosing an action in a given state based on the values of the state-action function. We can do this deterministically (always chosing the maximum valued action) or probabilistically (choose an action with a probability proportional to its value.) In deep q-learning, we train a deep net (ANN) to appoximate the state-action value function. We do this by passing reward signals from the agent's environment into the deep learning model.
 
 Our agent's deep neural net is initialized with random values such that that values of the state-action function are initially random as well. Using gradient descent we try to nudge our deep neural net toward approximating a good state-action function for the agent to use to make decisions in the model. We do this by keeping tract of state-action-reward transitions made by the agent in each time step. Then we use the following formula as our target Q (state-action function) value and do gradient descent over the error between this target value and the actual value produced by the deep net.
 
 $$Q_{target}(s_{last},a_{last}) = R + \gamma \dot \max_{a \in A} Q_{actual}(s_{current},a)$$
+
+In our Python Agent class, we keep track of a library of state-action-reward transitions that the agent has made throughout its entire history and at each time step do batch-gradident-descent on a randomly selected batch of transitions from the library.
+
+### Encoding the Agent's State
+
+The agents in our model have only a limited amount of local information available to them about the complete state of the model. This is different from a lot of reinforcement learning techniques which tend to use the entire state for training. The [Markov assumption](https://en.wikipedia.org/wiki/Markov_property) made in reinforcement learning does not hold given the way were are encoding our states, but this merely turns the agents perceived world into a probabilistic environment rather than a deterministic one-and so the reinforcement learning techniques we use will still work.
+
+To encode information about the agent's current state, we create a real valued vector which captures the scaled distance of different type of entities within a number of cones of vision fanning out around the agent to a fixed distance.
+
+The model below will demonstrate how an individual agent's state vector is generated based on vision parameters and other entities in its proximity.
+
+__Press the _setup_ and then use the _Agent Action_ buttons to change the agent's state while observing the changes to the State Vector.__
+
+<div style="overflow: hidden; width: 100%; height: 900px"><iframe src="encoding-visualization.html" width="100%" height="100%" style="border:none; margin-top: -150px;" scrolling="no">
+</iframe></div>
+
+
+
 
 
 
