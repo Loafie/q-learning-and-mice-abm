@@ -21,3 +21,9 @@ __Press the _setup_ and then the _go_ button.__
 
 <div style="overflow: hidden" width="100%" height="700"><iframe src="pred-prey-dummy-demo.html" width="100%" height="100%" style="border:none; margin-top: -150px;" scrolling="no">
 </iframe></div>
+
+### Reinforcement Learning Models
+
+To embed reinforcement learning into the agents in our ABMs we designed an Agent class in Python that we access from NetLogo with the NetLogo Python Extension. In fact, we developed a number of different Agent classes to experiment with differen styles of reinformcement learning.
+
+
