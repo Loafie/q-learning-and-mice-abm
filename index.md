@@ -13,7 +13,7 @@ __COMP_SCI 496 Deep Learning - Brian Pardo__
 
 The aim of this project is to embedded reinforcement learning models into predator and prey agents in an agent-based model with evolutionary dynamics that effect the meta-parameters of the learning models. Agent-based modeling is way of designing computational models from the perspective of individual autonomous agents to study how the behavior of systems as a whole are determined by the interactions between agents and other elements of the system. [NetLogo](https://ccl.northwestern.edu/netlogo/) is a programming language and agent-based modeling environment that we rely heavily on in this work. It was created and maintained by the [CCL Lab](https://ccl.northwestern.edu/) at [Northwestern University](http://www.northwestern.edu/). NetLogo includes a Python extension which allows us to interact with external Python code from within a NetLogo model-and more importantly to use machine learning libraries such as PyTorch. We have created a few different NetLogo models and a Q-learning model in PyTorch that we use in this project to conduct our experiments.
 
-__The [paper] also linked above describes the conceptual motivation for this project in more depth.__
+__The [paper](http://link) also linked above describes the conceptual motivation for this project in more depth.__
 
 ![Image](q-abm-chart.png)
 
@@ -60,6 +60,14 @@ __Press the _setup_ and then use the _Agent Action_ buttons to change the agent'
 ### Model Meta-Parameters and Evolution
 
 The deep q-nets inside of our agents have a number of different parameters: discounting factor, epsilon-decay (for an epsilon-greedy policy,) number of layers, dimensions of the first layer, dimensions of the secondary layer, training batch size and learning rate. In our primary predator/prey ABM we create 10 mice and 10 hawks with meta-parameters for their deep-nets randomly chosen from a given distribution. These 10 agents play the predator/prey game for a set amount of time-steps. Mice are given negative rewards and scored negatively for being captured by hawks. Hawks are given positive rewards and scores for capturing mice. At the end of the round the hawks and mice with the best scores pass on their meta-parameters to the next generation. The first place passes on their meta-parameters to four in the next generation, the second place, three, the third place, two, and the fourth place, one. The scores are also scaled by the number of parameters in the agents' deep q-learning nets, with larger nets resulting in a lower score. This introduces a downward selective pressure on net-size.
+
+### Results
+
+The following are results from a run of the model over 60 generations:
+
+_We just show the evolution of the average number of layers in each type of agents' deep Q-net and the average dimensions of primary and secondary layers. For more detailed results see the [paper]()._
+
+![img](average-layers.png) ![img](nodes-per-layer.png) ![img](nodes-per-layer-secondary.png)
 
 ### Future Work
 
