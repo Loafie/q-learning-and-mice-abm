@@ -28,6 +28,7 @@ To embed reinforcement learning into the agents in our ABMs we designed an Agent
 
 #### Q-Learning
 
+In Q-learning we try to find a state-action value function for an agent. The state-action value function gives us a value for performing each action in the set of possible actions available to the agent given a state. The agent's policy can then be determined by chosing an action in a given state based on the values of the state-action function. We can do this deterministically (always chosing the maximum valued action) or probabilitistically (choose an action with a probability proportional to its value.) In deep q-learning, we train a deep net (ANN) to appoximate the state-action value function. We do this by passing reward signals from the agent's environment into the deep learning model. 
 
 
 
