@@ -1,10 +1,10 @@
 <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
 <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
-#Evolutionary Paramter Tuning of Q-Learning Agents in a Predator/Prey Agent-Based Model
-## ![Can Gurkan](mailto:gurkan@u.northwestern.edu) and ![Leif Rasmussen](mailto:leifr@u.northwestern.edu)
-## COMP_SCI 496 Deep Learning - Brian Pardo
-## Northwestern University
+##Evolutionary Paramter Tuning of Q-Learning Agents in a Predator/Prey Agent-Based Model
+__ ![Can Gurkan](mailto:gurkan@u.northwestern.edu) and ![Leif Rasmussen](mailto:leifr@u.northwestern.edu)__
+__ COMP_SCI 496 Deep Learning - Brian Pardo __
+ _Northwestern University_
 
 ### Introduction
 
