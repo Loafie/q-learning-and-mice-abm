@@ -67,7 +67,7 @@ The following are results from a run of the model over 60 generations:
 
 _We just show the evolution of the average number of layers in each type of agents' deep Q-net and the average dimensions of primary and secondary layers. For more detailed results see the [paper]()._
 
-![img](average-layers.png) ![img](nodes-per-layer.png) ![img](nodes-per-layer-secondary.png)
+![img](average-layers.png) ![img](nodes-per-layer.png) ![img](noder-per-layer-secondary.png)
 
 ### Future Work
 
