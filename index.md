@@ -24,19 +24,13 @@ We used a single agent ABM to calibrate our reinforcement learning model. A sing
 The following is a demonstration, but just with a manually programmed agent heuristic.
 
 __Press the _setup_ and then the _go_ button.__
- 
-<center><div style="overflow: hidden; width: 100%; height: 730px"><iframe src="dummy-model-demo.html" width="100%" height="100%" style="border:none; margin-top:-150px;" scrolling="no">
-</iframe></div></center>
-
+<center><div style="overflow: hidden; width: 100%; height: 730px"><iframe src="dummy-model-demo.html" width="100%" height="100%" style="border:none; margin-top:-150px;" scrolling="no"></iframe></div></center>
 The second model we used involved multiple predator and prey agents. The hawk agents and the mice agents can both perform only 3 actions as in the prior model: turn right or left by 20 degrees and move forward. The hawks receive a positive reward when they get within a certain distance of a mouse. Mice receive a negative reward when they get too close to a hawk and then are moved to a new random location in the world.
 
 Below is a demonstration that in which mice and hawks act purely randomly.
 
 __Press the _setup_ and then the _go_ button.__
-
-<center><div style="overflow: hidden; width: 100%; height: 730px"><iframe src="pred-prey-dummy-demo.html" width="100%" height="100%" style="border:none; margin-top: -150px;" scrolling="no">
-</iframe></div></center>
-
+<center><div style="overflow: hidden; width: 100%; height: 730px"><iframe src="pred-prey-dummy-demo.html" width="100%" height="100%" style="border:none; margin-top: -150px;" scrolling="no"></iframe></div></center>
 ### Reinforcement Learning Models
 
 To embed reinforcement learning into the agents in our ABMs we designed an Agent class in Python that we access from NetLogo with the NetLogo Python Extension. In fact, we developed a number of different Agent classes to experiment with different styles of reinforcement learning. However, all of these variations centered around one method of reinforcement learning: Q-learning.
@@ -60,10 +54,7 @@ To encode information about the agent's current state, we create a real valued v
 The model below will demonstrate how an individual agent's state vector is generated based on vision parameters and other entities in its proximity.
 
 __Press the _setup_ and then use the _Agent Action_ buttons to change the agent's state while observing the changes to the State Vector.__
-
-<center><div style="overflow: hidden; width: 100%; height: 875px"><iframe src="encoding-visualization.html" width="100%" height="100%" style="border:none; margin-top: -150px;" scrolling="no">
-</iframe></div></center>
-
+<center><div style="overflow: hidden; width: 100%; height: 875px"><iframe src="encoding-visualization.html" width="100%" height="100%" style="border:none; margin-top: -150px;" scrolling="no"></iframe></div></center>
 ### Model Meta-Parameters and Evolution
 
 The deep q-nets inside of our agents have a number of different parameters: discounting factor, epsilon-decay (for an epsilon-greedy policy,) number of layers, dimensions of the first layer, dimensions of the secondary layer, training batch size and learning rate. In our primary predator/prey ABM we create 10 mice and 10 hawks with meta-parameters for their deep-nets randomly chosen from a given distribution. These 10 agents play the predator/prey game for a set amount of time-steps. Mice are given negative rewards and scored negatively for being captured by hawks. Hawks are given positive rewards and scores for capturing mice. At the end of the round the hawks and mice with the best scores pass on their meta-parameters to the next generation. The first place passes on their meta-parameters to four in the next generation, the second place, three, the third place, two, and the fourth place, one. The scores are also scaled by the number of parameters in the agents' deep q-learning nets, with larger nets resulting in a lower score. This introduces a downward selective pressure on net-size.
@@ -71,8 +62,3 @@ The deep q-nets inside of our agents have a number of different parameters: disc
 ### Future Work
 
 We hope to use some portion of the software we developed and some of the experimental techniques in this project in future work. We would like to put q-learning agents in more complex environments with larger state and action spaces and less computational tractable equilibria. All of the experiments we conduct in this project were done on small scale hardware as well. In the future we would like to be able to throw more computing power at something like this so we can conduct a wider range of experiments and get more robust results.
-
-
-
-
-
