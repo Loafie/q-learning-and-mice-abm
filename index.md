@@ -8,12 +8,14 @@ __[Can Gurkan](mailto:gurkan@u.northwestern.edu) and [Leif Rasmussen](mailto:lei
 __COMP_SCI 496 Deep Learning - Brian Pardo__
 
  _Northwestern University_
+ 
+ [The Full Paper](Deep_Learning_Final_Project_Paper.pdf)
 
 ### Introduction
 
 The aim of this project is to embed reinforcement learning models into predator and prey agents in an agent-based model with evolutionary dynamics that effect the meta-parameters of the deep learning models. Agent-based (ABM) modeling is way of designing computational models from the perspective of individual autonomous agents to study how the behavior of systems as a whole are determined by the interactions between agents and other elements of the system. [NetLogo](https://ccl.northwestern.edu/netlogo/) is a programming language and agent-based modeling environment that we rely heavily on in this work. It was created and maintained by the [CCL Lab](https://ccl.northwestern.edu/) at [Northwestern University](http://www.northwestern.edu/). NetLogo includes a Python extension which allows us to interact with external Python code from within a NetLogo model-and more importantly to use machine learning libraries such as PyTorch. We have created a few different NetLogo models and a Q-learning model in PyTorch that we use in this project to conduct our experiments.
 
-__The [paper](http://link) also linked above describes the conceptual motivation for this project in more depth.__
+__The [paper]( Deep_Learning_Final_Project_Paper.pdf) also linked above describes the conceptual motivation for this project in more depth.__
 
 ![Image](q-abm-chart.png)
 
@@ -65,7 +67,7 @@ The deep q-nets inside of our agents have a number of different parameters: disc
 
 The following are results from a run of the model over 60 generations:
 
-_We just show the evolution of the average number of layers in each type of agents' deep Q-net and the average dimensions of primary and secondary layers. For more detailed results see the [paper]()._
+_We just show the evolution of the average number of layers in each type of agents' deep Q-net and the average dimensions of primary and secondary layers. For more detailed results see the [paper](Deep_Learning_Final_Project_Paper.pdf)._
 
 ![img](average-layers.png) ![img](nodes-per-layer.png) ![img](noder-per-layer-secondary.png)
 
