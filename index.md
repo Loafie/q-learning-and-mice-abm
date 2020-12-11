@@ -45,7 +45,7 @@ In Q-learning we try to find a state-action value function for an agent. The sta
 
 Our agent's deep neural net is initialized with random values such that the values of the state-action function are initially random as well. Using gradient descent we try to nudge our deep neural net toward approximating a good state-action function for the agent to use to make decisions in the model. We do this by keeping track of state-action-reward transitions made by the agent in each time step. Then we use the following formula as our target Q (state-action function) value and do gradient descent over the error between this target value and the actual value produced by the deep net.
 
-$$Q_{target}(s_{last},a_{last}) = R + \gamma \dot \max_{a \in A} Q_{actual}(s_{current},a)$$
+$$Q_{target}(s_{last},a_{last}) = R + \gamma \max_{a \in A} Q_{actual}(s_{current},a)$$
 
 In our Python Agent class, we keep track of a library of state-action-reward transitions that the agent has made throughout its entire history and at each time step do batch-gradient-descent on a randomly selected batch of transitions from the library.
 
