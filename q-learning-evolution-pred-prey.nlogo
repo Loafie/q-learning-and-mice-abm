@@ -651,7 +651,7 @@ gen-length
 gen-length
 1000
 100000
-1000.0
+100000.0
 1000
 1
 NIL
@@ -703,7 +703,7 @@ SWITCH
 298
 generational-evolution?
 generational-evolution?
-0
+1
 1
 -1000
 

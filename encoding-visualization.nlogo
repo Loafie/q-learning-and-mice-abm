@@ -1,4 +1,4 @@
-globals [ego]
+globals [ego num-poison num-fruit]
 breed [poison a-poison]
 breed [fruit a-fruit]
 breed [mice mouse]
@@ -30,22 +30,24 @@ end
 
 to setup
   ca
+  set num-poison 5
+  set num-fruit 5
   ask patches [set pcolor 53]
   create-mice 1 [
     set ego self
     set color grey
-    set size 4
+    set size 2
     set shape "mouse"
     draw-cones (vision-cones * vision-cone-width / 2 - vision-cone-width / 2) vision-depth vision-cone-width vision-cones
   ]
   ask n-of num-poison patches with [not any? mice-here]
   [
-    sprout-poison 1 [set size 3 set shape "poison"]
+    sprout-poison 1 [set size 1.5 set shape "poison"]
   ]
 
   ask n-of num-poison patches with [not any? mice-here and not any? poison-here]
   [
-    sprout-fruit 1 [set size 3 set shape "fruit" set color red]
+    sprout-fruit 1 [set size 1.5 set shape "fruit" set color red]
   ]
 end
 
@@ -118,13 +120,13 @@ to-report get-in-cone [dist angle]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-228
+8
 10
-830
-613
+526
+529
 -1
 -1
-18.0
+30.0
 1
 10
 1
@@ -134,10 +136,10 @@ GRAPHICS-WINDOW
 1
 1
 1
--16
-16
--16
-16
+-8
+8
+-8
+8
 1
 1
 1
@@ -145,14 +147,29 @@ ticks
 30.0
 
 SLIDER
-35
-10
-207
-43
+78
+535
+198
+568
 vision-cones
 vision-cones
 0
 36
+3.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+7
+571
+113
+604
+vision-depth
+vision-depth
+0
+8
 5.0
 1
 1
@@ -160,40 +177,25 @@ NIL
 HORIZONTAL
 
 SLIDER
-35
-45
-207
-78
-vision-depth
-vision-depth
-0
-15
-9.0
-1
-1
-NIL
-HORIZONTAL
-
-SLIDER
-35
-80
-207
-113
+117
+571
+251
+604
 vision-cone-width
 vision-cone-width
 0
 45
-20.0
+25.0
 1
 1
 NIL
 HORIZONTAL
 
 BUTTON
-87
-123
-150
-156
+8
+534
+71
+567
 NIL
 setup
 NIL
@@ -207,20 +209,20 @@ NIL
 1
 
 TEXTBOX
-0
-331
-222
-377
+307
+530
+529
+576
 Agent Actions
 36
 0.0
 1
 
 BUTTON
-148
-379
-213
-437
+454
+578
+519
+636
 Turn Right
 right-turn
 NIL
@@ -234,10 +236,10 @@ NIL
 1
 
 BUTTON
-8
-379
-73
-437
+315
+578
+380
+636
 Left Turn
 left-turn
 NIL
@@ -251,10 +253,10 @@ NIL
 1
 
 BUTTON
-76
-379
-146
-437
+383
+578
+453
+636
 Go Forward
 go-forward
 NIL
@@ -267,47 +269,17 @@ NIL
 NIL
 1
 
-SLIDER
-35
-164
-207
-197
-num-poison
-num-poison
-0
-10
-5.0
-1
-1
-NIL
-HORIZONTAL
-
-SLIDER
-35
-199
-207
-232
-num-fruit
-num-fruit
-0
-10
-10.0
-1
-1
-NIL
-HORIZONTAL
-
 OUTPUT
-249
-660
-798
-714
-22
+8
+655
+528
+709
+18
 
 TEXTBOX
-233
+12
 622
-467
+246
 651
 Observation Vector
 25
